@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Generator i Karta Markerów WebAR | EkoOdkrywcy 1–3</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <style>
+            body {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                background-color: #f4f7f4;
+            }
+            h1,
+            h2,
+            h3,
+            .font-display {
+                font-family: 'Nunito', sans-serif;
+            }
+            @media print {
+                .no-print {
+                    display: none !important;
+                }
+                body {
+                    background-color: #ffffff !important;
+                }
+                .marker-card {
+                    break-inside: avoid;
+                    box-shadow: none !important;
+                    border: 2px solid #cbd5e1 !important;
+                }
+            }
+        </style>
+    </head>
+    <body class="text-slate-800 antialiased">
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { useState, useEffect, useRef } = React;
+
+            // Exact same 4x4 grid patterns as in zadanie-3.html for 100% AR.js recognition
+            const MARKER_CARDS = [
+                {
+                    id: 'tree',
+                    markerId: 0,
+                    name: 'Stare spróchniałe drzewo',
+                    role: 'Schronienie dla nietoperzy, dzięciołów i chrząszczy',
+                    icon: '🪵',
+                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Dead_tree_in_forest.jpg/640px-Dead_tree_in_forest.jpg',
+                    grid: [
+                        [1, 0, 0, 1],
+                        [0, 1, 1, 0],
+                        [0, 1, 1, 0],
+                        [1, 0, 0, 1],
+                    ],
+                },
+                {
+                    id: 'nestbox',
+                    markerId: 1,
+                    name: 'Budka lęgowa',
+                    role: 'Bezpieczny dom lęgowy dla sikorek i szpaków',
+                    icon: '🏠',
+                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Nistkasten_01.jpg/640px-Nistkasten_01.jpg',
+                    grid: [
+                        [0, 1, 1, 0],
+                        [1, 1, 1, 1],
+                        [1, 0, 0, 1],
+                        [1, 0, 0, 1],
+                    ],
+                },
+                {
+                    id: 'puddle',
+                    markerId: 2,
+                    name: 'Kałuża z błotem',
+                    role: 'Materiał na gniazda dla jaskółek i wodopój',
+                    icon: '💧',
+                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Puddle_in_forest.jpg/640px-Puddle_in_forest.jpg',
+                    grid: [
+                        [1, 1, 0, 0],
+                        [1, 1, 0, 0],
+                        [0, 0, 1, 1],
+                        [0, 0, 1, 1],
+                    ],
+                },
+                {
+                    id: 'meadow',
+                    markerId: 3,
+                    name: 'Dzika łąka kwietna',
+                    role: 'Stołówka dla pszczół, trzmieli i motyli',
+                    icon: '🌼',
+                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Wildflower_meadow_in_summer.jpg/640px-Wildflower_meadow_in_summer.jpg',
+                    grid: [
+                        [0, 1, 0, 1],
+                        [1, 0, 1, 0],
+                        [0, 1, 0, 1],
+                        [1, 0, 1, 0],
+                    ],
+                },
+                {
+                    id: 'lawn',
+                    markerId: 4,
+                    name: 'Idealnie przystrzyżony trawnik',
+                    role: 'Element testowy („zielona pustynia” bez kwiatów)',
+                    icon: '⛳',
+                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Landsvale.jpg/640px-Landsvale.jpg',
+                    grid: [
+                        [1, 1, 1, 1],
+                        [0, 0, 0, 0],
+                        [1, 1, 1, 1],
+                        [0, 0, 0, 0],
+                    ],
+                },
+                {
+                    id: 'lamp',
+                    markerId: 5,
+                    name: 'Lampa ogrodowa świecąca całą noc',
+                    role: 'Element testowy (zanieczyszczenie światłem)',
+                    icon: '💡',
+                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Big-eared-townsend-fledermaus.jpg/640px-Big-eared-townsend-fledermaus.jpg',
+                    grid: [
+                        [1, 0, 1, 0],
+                        [1, 0, 1, 0],
+                        [0, 1, 0, 1],
+                        [0, 1, 0, 1],
+                    ],
+                },
+            ];
+
+            // Renders a crisp AR.js marker with thick black border + inner 4x4 pattern
+            function MarkerCanvas({ grid, label, onDownloadReady }) {
+                const canvasRef = useRef(null);
+
+                useEffect(() => {
+                    const canvas = canvasRef.current;
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    const size = 240;
+                    const border = 48; // 20% thick black border required by AR.js
+                    const innerSize = size - border * 2;
+                    const cell = innerSize / 4;
+
+                    // White quiet-zone margin
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, size, size);
+
+                    // Thick black ARToolKit frame
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(12, 12, size - 24, size - 24);
+
+                    // Inner white background
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(border, border, innerSize, innerSize);
+
+                    // 4x4 binary pattern cells
+                    for (let r = 0; r < 4; r++) {
+                        for (let c = 0; c < 4; c++) {
+                            ctx.fillStyle = grid[r][c] === 1 ? '#000000' : '#ffffff';
+                            ctx.fillRect(border + c * cell, border + r * cell, cell, cell);
+                        }
+                    }
+
+                    if (onDownloadReady) {
+                        onDownloadReady(canvas.toDataURL('image/png'));
+                    }
+                }, [grid]);
+
+                return <canvas ref={canvasRef} width={240} height={240} aria-label={`Marker AR dla ${label}`} className="w-44 h-44 mx-auto border border-slate-200 rounded-lg bg-white" />;
+            }
+
+            function MarkerCardItem({ card }) {
+                const [imgFailed, setImgFailed] = useState(false);
+                const [pngUrl, setPngUrl] = useState('');
+
+                return (
+                    <article className="marker-card bg-white rounded-3xl p-5 border-2 border-emerald-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center justify-between gap-2 mb-3">
+                                <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold">Marker AR #{card.markerId}</span>
+                                <span className="text-2xl">{card.icon}</span>
+                            </div>
+
+                            {/* Nature Photo with SVG Fallback */}
+                            <div className="h-32 w-full rounded-2xl overflow-hidden bg-emerald-50 border border-emerald-100 mb-3 flex items-center justify-center">
+                                {!imgFailed ? (
+                                    <img src={card.imageUrl} alt={card.name} crossOrigin="anonymous" onError={() => setImgFailed(true)} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="text-center p-3">
+                                        <span className="text-4xl block mb-1">{card.icon}</span>
+                                        <span className="text-xs font-bold text-emerald-800">{card.name}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <h3 className="text-base font-black text-slate-900 leading-snug">{card.name}</h3>
+                            <p className="text-xs text-slate-600 mt-1 mb-4">{card.role}</p>
+                        </div>
+
+                        {/* Scannable AR.js Marker */}
+                        <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200 text-center">
+                            <MarkerCanvas grid={card.grid} label={card.name} onDownloadReady={(url) => setPngUrl(url)} />
+                            {pngUrl && (
+                                <a href={pngUrl} download={`marker-ar-${card.markerId}-${card.id}.png`} className="no-print mt-3 inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition">
+                                    <span>⬇️</span>
+                                    <span>Pobierz PNG markera</span>
+                                </a>
+                            )}
+                        </div>
+                    </article>
+                );
+            }
+
+            function App() {
+                return (
+                    <div className="min-h-screen flex flex-col">
+                        {/* Header */}
+                        <header className="no-print bg-white border-b border-emerald-200 sticky top-0 z-30">
+                            <div className="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                    <a href="index.html" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm transition">
+                                        <span>←</span>
+                                        <span>Menu główne</span>
+                                    </a>
+                                    <a href="zadanie-3.html" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold text-xs sm:text-sm transition">
+                                        <span>📷</span>
+                                        <span>Wróć do Zadania 3 (WebAR)</span>
+                                    </a>
+                                </div>
+
+                                <button onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow transition">
+                                    <span>🖨️</span>
+                                    <span>Drukuj karty markerów (A4)</span>
+                                </button>
+                            </div>
+                        </header>
+
+                        <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8">
+                            {/* Instructions */}
+                            <section className="bg-white rounded-3xl p-6 border-2 border-emerald-200 shadow-sm mb-8">
+                                <span className="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold mb-2">Karta Pomocy WebAR • Zadanie 3</span>
+                                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">Generator i Karta Markerów Ekosystemu (AR.js)</h1>
+                                <p className="text-sm text-slate-600 leading-relaxed mb-4">
+                                    Wydrukuj poniższą stronę lub wyświetl wybrane markery na ekranie drugiego telefonu/tabletu. Następnie otwórz{' '}
+                                    <a href="zadanie-3.html" className="text-emerald-700 font-extrabold underline">
+                                        Zadanie 3: Zbuduj Idealny Ekosystem
+                                    </a>
+                                    , włącz tryb <strong>Kamera WebAR</strong> i ułóż 2 lub 3 karty obok siebie przed obiektywem!
+                                </p>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                                    <div className="bg-emerald-50 rounded-2xl p-3.5 border border-emerald-200">
+                                        <strong className="font-black text-emerald-900 block mb-1">1. Wyraźna czarna ramka</strong>
+                                        <span>Nie zasłaniaj palcami czarnej obwódki markera — silnik AR.js rozpoznaje po niej pozycję 3D.</span>
+                                    </div>
+                                    <div className="bg-emerald-50 rounded-2xl p-3.5 border border-emerald-200">
+                                        <strong className="font-black text-emerald-900 block mb-1">2. Ułóż karty obok siebie</strong>
+                                        <span>
+                                            Zbliż do siebie np. <em>Spróchniałe drzewo (#0)</em>, <em>Kałużę z błotem (#2)</em> i <em>Łąkę kwietną (#3)</em>.
+                                        </span>
+                                    </div>
+                                    <div className="bg-emerald-50 rounded-2xl p-3.5 border border-emerald-200">
+                                        <strong className="font-black text-emerald-900 block mb-1">3. Obserwuj relacje 3D</strong>
+                                        <span>System automatycznie wykryje sąsiedztwo i ogłosi status „Perfekcyjny Ekosystem”!</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* 6 Printable Marker Cards */}
+                            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {MARKER_CARDS.map((card) => (
+                                    <MarkerCardItem key={card.id} card={card} />
+                                ))}
+                            </section>
+                        </main>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        </script>
+    </body>
+</html>

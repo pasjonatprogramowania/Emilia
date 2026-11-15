@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zadanie 1: Czego brakuje w plecaku? | EkoOdkrywcy 1–3</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #fefce8;
+    }
+    h1, h2, h3, .font-display {
+      font-family: 'Nunito', sans-serif;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-10px) rotate(-2deg); }
+      40% { transform: translateX(10px) rotate(2deg); }
+      60% { transform: translateX(-8px) rotate(-1deg); }
+      80% { transform: translateX(8px) rotate(1deg); }
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-shake {
+      animation: shake 0.5s ease-in-out;
+    }
+    .animate-pop {
+      animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    const ANIMALS = [
+      {
+        id: 'krolik',
+        name: 'Królik miniaturka',
+        emoji: '🐇',
+        habitat: 'Zwierzę domowe (roślinożerca)',
+        hint: 'Królik potrzebuje stałego dostępu do siana, świeżej wody oraz bezpiecznego transportera lub kojca.',
+        items: [
+          { id: 'siano', name: 'Pachnące siano', icon: '🌾', safe: true, info: 'Podstawa diety królika (80% jadłospisu) — ściera zęby i wspiera trawienie.' },
+          { id: 'woda', name: 'Miska ze świeżą wodą', icon: '🥣', safe: true, info: 'Czysta woda w ciężkiej ceramicznej misce jest niezbędna każdego dnia.' },
+          { id: 'ziola', name: 'Suszone zioła i mniszek', icon: '🌿', safe: true, info: 'Naturalne zioła dostarczają witamin i minerałów.' },
+          { id: 'czekolada', name: 'Czekolada mleczna', icon: '🍫', safe: false, reason: 'Czekolada zawiera teobrominę i cukier — jest silnie trująca dla królików i powoduje groźne zatrucia!' },
+          { id: 'mleko', name: 'Mleko krowie', icon: '🥛', safe: false, reason: 'Dorosłe króliki nie trawią laktozy! Mleko krowie wywołuje u nich bolesne wzdęcia i biegunkę.' },
+          { id: 'kolowrotek', name: 'Mała klatka z kołowrotkiem', icon: '🎡', safe: false, reason: 'Kołowrotek jest przeznaczony wyłącznie dla małych gryzoni (np. chomików) — królik może złamać w nim kręgosłup!' }
+        ]
+      },
+      {
+        id: 'pies',
+        name: 'Pies (Burek)',
+        emoji: '🐕',
+        habitat: 'Zwierzę domowe (towarzysz spacerów)',
+        hint: 'Na spacer i wyjazd z psem zabieramy smycz, miskę z wodą oraz woreczki na nieczystości.',
+        items: [
+          { id: 'smycz', name: 'Smycz i szelki', icon: '🦮', safe: true, info: 'Zapewniają bezpieczeństwo psu podczas spacerów w mieście i w lesie.' },
+          { id: 'woda_pies', name: 'Bidon i miska z wodą', icon: '💧', safe: true, info: 'Pies szybko się przegrzewa — woda na spacerze to podstawa.' },
+          { id: 'woreczki', name: 'Woreczki biodegradowalne', icon: '♻️', safe: true, info: 'Odpowiedzialny opiekun zawsze sprząta po swoim pupilu.' },
+          { id: 'czekolada_pies', name: 'Tabliczka czekolady', icon: '🍫', safe: false, reason: 'Czekolada jest dla psa TRUCIZNĄ! Zawarta w kakao teobromina uszkadza serce i układ nerwowy psa.' },
+          { id: 'winogrona', name: 'Kiść winogron', icon: '🍇', safe: false, reason: 'Winogrona i rodzynki są silnie toksyczne dla psów i mogą uszkodzić ich nerki.' },
+          { id: 'siano_pies', name: 'Pęczek siana', icon: '🌾', safe: false, reason: 'Pies nie jest roślinożercą i nie trawi surowego siana — potrzebuje zbilansowanej karmy mięsnej.' }
+        ]
+      },
+      {
+        id: 'jez',
+        name: 'Jeż europejski (ratowany)',
+        emoji: '🦔',
+        habitat: 'Dziki gość ogrodu (owadożerca)',
+        hint: 'Gdy pomagasz osłabionemu jeżowi przed wizytą u weterynarza, podaj mu wodę i karmę bogatą w białko.',
+        items: [
+          { id: 'woda_jez', name: 'Płytka miseczka z wodą', icon: '💧', safe: true, info: 'Jeże bardzo często cierpią z powodu odwodnienia — woda ratuje im życie.' },
+          { id: 'karma_mokra', name: 'Mokra karma mięsna (dla kociąt)', icon: '🥫', safe: true, info: 'Wysokomięsna karma bez sosu i zbóż świetnie zastępuje owady w nagłej sytuacji.' },
+          { id: 'karton', name: 'Kartonik z ręcznikiem', icon: '📦', safe: true, info: 'Ciemne, ciepłe i ciche schronienie pozwala jeżowi bezpiecznie doczekać pomocy.' },
+          { id: 'mleko_jez', name: 'Spodek mleka krowiego', icon: '🥛', safe: false, reason: 'MIT! Nigdy nie podawaj jeżowi mleka krowiego! Jeże nie trawią laktozy — picie mleka kończy się dla nich ciężką chorobą.' },
+          { id: 'jablko_jez', name: 'Jabłko (mit z bajek!)', icon: '🍎', safe: false, reason: 'Jeże nie noszą jabłek na kolcach i nie jedzą owoców — są owadożercami (jedzą chrząszcze, dżdżownice i ślimaki).' },
+          { id: 'smycz_jez', name: 'Smycz z obrożą', icon: '🦮', safe: false, reason: 'Jeż to dzikie zwierzę pod ścisłą ochroną — nie wyprowadzamy go na smyczy!' }
+        ]
+      },
+      {
+        id: 'zolw',
+        name: 'Żółw stepowy',
+        emoji: '🐢',
+        habitat: 'Zwierzę egzotyczne (roślinożerca)',
+        hint: 'Żółw stepowy potrzebuje polnych roślin (babka, mniszek), wapnia (sepii) oraz płytkiej miseczki z wodą.',
+        items: [
+          { id: 'mniszek', name: 'Liście mniszka i babki', icon: '🌱', safe: true, info: 'Dziko rosnące zielone rośliny to najzdrowszy pokarm dla żółwia lądowego.' },
+          { id: 'sepia', name: 'Sepia (źródło wapnia)', icon: '🦴', safe: true, info: 'Wapń jest niezbędny, aby skorupa żółwia rosła twarda i zdrowa.' },
+          { id: 'woda_zolw', name: 'Płytki basenik z wodą', icon: '🥣', safe: true, info: 'Żółw pije wodę i chętnie moczy w niej skorupę.' },
+          { id: 'mleko_zolw', name: 'Mleko krowie', icon: '🥛', safe: false, reason: 'Gady w ogóle nie wytwarzają enzymów trawiących mleko ssaków — to dla nich bardzo szkodliwe!' },
+          { id: 'czekolada_zolw', name: 'Słodka czekolada', icon: '🍫', safe: false, reason: 'Cukier i kakao niszczą wątrobę oraz układ pokarmowy żółwia.' },
+          { id: 'kolowrotek_zolw', name: 'Kołowrotek do biegania', icon: '🎡', safe: false, reason: 'Żółw potrzebuje dużego wybiegu z ziemią i kryjówką, a nie kołowrotka!' }
+        ]
+      },
+      {
+        id: 'kura',
+        name: 'Kura zielononóżka',
+        emoji: '🐔',
+        habitat: 'Zwierzę gospodarskie (wszystkożerca)',
+        hint: 'Kura znosi zdrowe jajka, gdy ma dostęp do ziarna zbóż, czystej wody oraz żwirku/piasku wspomagającego trawienie.',
+        items: [
+          { id: 'ziarno', name: 'Ziarno pszenicy i owsa', icon: '🌽', safe: true, info: 'Ziarna zbóż dostarczają kurze energii na cały dzień.' },
+          { id: 'woda_kura', name: 'Poidło z czystą wodą', icon: '💧', safe: true, info: 'Bez stałego dostępu do czystej wody kura nie może prawidłowo funkcjonować.' },
+          { id: 'zwirek', name: 'Drobny żwirek i muszelki', icon: '🪨', safe: true, info: 'Kury nie mają zębów! Połykają drobne kamyczki, które rozcierają ziarno w żołądku.' },
+          { id: 'czekolada_kura', name: 'Czekolada i słodycze', icon: '🍫', safe: false, reason: 'Teobromina z kakao jest śmiertelnie groźna dla ptaków!' },
+          { id: 'smycz_kura', name: 'Smycz automatyczna', icon: '🦮', safe: false, reason: 'Kura potrzebuje bezpiecznego wybiegu i grzędy w kurniku, a nie smyczy.' },
+          { id: 'mleko_kura', name: 'Mleko krowie', icon: '🥛', safe: false, reason: 'Ptaki nie trawią laktozy z mleka ssaków.' }
+        ]
+      }
+    ];
+
+    function App() {
+      const [animalIndex, setAnimalIndex] = useState(0);
+      const [packedIds, setPackedIds] = useState([]);
+      const [harmfulAlert, setHarmfulAlert] = useState(null);
+      const [lastGoodToast, setLastGoodToast] = useState(null);
+      const [dragOver, setDragOver] = useState(false);
+      const [shakingId, setShakingId] = useState(null);
+
+      const currentAnimal = ANIMALS[animalIndex];
+      const safeItems = useMemo(() => currentAnimal.items.filter(i => i.safe), [currentAnimal]);
+      const isComplete = packedIds.length === safeItems.length;
+
+      const handleSelectAnimal = (idx) => {
+        setAnimalIndex(idx);
+        setPackedIds([]);
+        setHarmfulAlert(null);
+        setLastGoodToast(null);
+      };
+
+      const handleTryPackItem = (item) => {
+        if (packedIds.includes(item.id)) return;
+
+        if (item.safe) {
+          const next = [...packedIds, item.id];
+          setPackedIds(next);
+          setHarmfulAlert(null);
+          setLastGoodToast(item);
+
+          if (next.length === safeItems.length) {
+            try {
+              const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
+              saved['zadanie-1'] = true;
+              localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
+            } catch (e) {}
+          }
+        } else {
+          setShakingId(item.id);
+          setTimeout(() => setShakingId(null), 550);
+          setHarmfulAlert(item);
+          setLastGoodToast(null);
+        }
+      };
+
+      const handleDragStart = (e, item) => {
+        e.dataTransfer.setData('text/plain', item.id);
+      };
+
+      const handleDrop = (e) => {
+        e.preventDefault();
+        setDragOver(false);
+        const itemId = e.dataTransfer.getData('text/plain');
+        const found = currentAnimal.items.find(i => i.id === itemId);
+        if (found) {
+          handleTryPackItem(found);
+        }
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col">
+          {/* Top Navigation Bar */}
+          <header className="bg-white border-b border-amber-200 sticky top-0 z-30">
+            <div className="max-w-5xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+              <a
+                href="index.html"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition"
+              >
+                <span>←</span>
+                <span>Powrót do menu</span>
+              </a>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-extrabold">
+                  Zadanie 1 • Karta #5
+                </span>
+                <h1 className="text-base sm:text-lg font-black text-slate-900">
+                  „Czego brakuje w plecaku?”
+                </h1>
+              </div>
+              <button
+                onClick={() => handleSelectAnimal((animalIndex + 1) % ANIMALS.length)}
+                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm transition shadow-sm"
+              >
+                🎲 Losuj inne zwierzę
+              </button>
+            </div>
+          </header>
+
+          <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:py-8">
+            {/* Animal Selector Pills */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {ANIMALS.map((a, idx) => (
+                <button
+                  key={a.id}
+                  onClick={() => handleSelectAnimal(idx)}
+                  className={`px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-extrabold transition flex items-center gap-2 border-2 ${
+                    idx === animalIndex
+                      ? 'bg-amber-600 text-white border-amber-600 shadow-md'
+                      : 'bg-white text-slate-700 border-amber-200 hover:border-amber-400'
+                  }`}
+                >
+                  <span className="text-lg">{a.emoji}</span>
+                  <span>{a.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Harmful Item Animated Alert Modal/Banner */}
+            {harmfulAlert && (
+              <div className="mb-6 bg-rose-600 text-white rounded-3xl p-5 shadow-xl border-4 border-rose-300 animate-pop flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="text-4xl bg-white/20 w-14 h-14 rounded-2xl flex items-center justify-center shrink-0">
+                    ⚠️
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wider text-rose-200">
+                      Uwaga! Tego nie wkładamy do plecaka!
+                    </p>
+                    <h3 className="text-lg font-black mb-1">
+                      {harmfulAlert.icon} {harmfulAlert.name} szkodzi zwierzęciu ({currentAnimal.name})!
+                    </h3>
+                    <p className="text-sm text-rose-50 leading-relaxed">
+                      {harmfulAlert.reason}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setHarmfulAlert(null)}
+                  className="px-4 py-2 rounded-xl bg-white text-rose-700 font-extrabold text-xs shrink-0 hover:bg-rose-50"
+                >
+                  Rozumiem!
+                </button>
+              </div>
+            )}
+
+            {/* Good Item Toast */}
+            {lastGoodToast && !isComplete && (
+              <div className="mb-6 bg-emerald-600 text-white rounded-2xl p-4 shadow-md animate-pop flex items-center gap-3">
+                <span className="text-2xl">✅</span>
+                <div className="text-sm">
+                  <strong className="font-extrabold">Świetny wybór! {lastGoodToast.name}: </strong>
+                  <span>{lastGoodToast.info}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Main Interactive Area */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Left: Animal + Backpack Dropzone */}
+              <div className="lg:col-span-5 flex flex-col gap-5">
+                <div className="bg-white rounded-3xl p-6 border-2 border-amber-200 shadow-sm text-center">
+                  <div className="w-24 h-24 mx-auto rounded-3xl bg-amber-100 border-2 border-amber-300 flex items-center justify-center text-6xl mb-3 shadow-inner">
+                    {currentAnimal.emoji}
+                  </div>
+                  <span className="inline-block px-3 py-1 rounded-full bg-amber-50 text-amber-800 text-xs font-bold mb-1">
+                    {currentAnimal.habitat}
+                  </span>
+                  <h2 className="text-2xl font-black text-slate-900 mb-2">
+                    {currentAnimal.name}
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-600 bg-amber-50/70 rounded-2xl p-3 border border-amber-100">
+                    💡 {currentAnimal.hint}
+                  </p>
+                </div>
+
+                {/* Backpack Drop Zone */}
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={handleDrop}
+                  className={`rounded-3xl p-6 border-4 border-dashed transition-all ${
+                    dragOver
+                      ? 'bg-emerald-100 border-emerald-500 scale-[1.02]'
+                      : isComplete
+                        ? 'bg-emerald-50 border-emerald-400'
+                        : 'bg-amber-100/70 border-amber-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-3xl">🎒</span>
+                      <div>
+                        <h3 className="text-lg font-black text-slate-900">
+                          Plecak Opiekuna
+                        </h3>
+                        <p className="text-xs text-slate-600 font-semibold">
+                          Przeciągnij tutaj lub kliknij bezpieczne rzeczy
+                        </p>
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-white text-slate-800 font-black text-sm shadow-sm">
+                      {packedIds.length} / {safeItems.length}
+                    </span>
+                  </div>
+
+                  {/* Slots inside Backpack */}
+                  <div className="grid grid-cols-3 gap-2.5 mt-4">
+                    {Array.from({ length: safeItems.length }).map((_, slotIdx) => {
+                      const packedItemId = packedIds[slotIdx];
+                      const packedItem = currentAnimal.items.find(i => i.id === packedItemId);
+                      return (
+                        <div
+                          key={slotIdx}
+                          className={`h-24 rounded-2xl flex flex-col items-center justify-center p-2 text-center border-2 transition ${
+                            packedItem
+                              ? 'bg-white border-emerald-400 shadow-sm animate-pop'
+                              : 'bg-white/50 border-amber-300/70 text-slate-400'
+                          }`}
+                        >
+                          {packedItem ? (
+                            <>
+                              <span className="text-3xl mb-1">{packedItem.icon}</span>
+                              <span className="text-[11px] font-extrabold text-slate-800 leading-tight">
+                                {packedItem.name}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-xs font-bold">Slot {slotIdx + 1}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {isComplete && (
+                    <div className="mt-5 bg-emerald-600 text-white rounded-2xl p-4 text-center animate-pop shadow-lg">
+                      <p className="text-lg font-black mb-1">
+                        🏆 Brawo! Plecak spakowany idealnie!
+                      </p>
+                      <p className="text-xs text-emerald-100 mb-3">
+                        Wszystkie wybrane przedmioty są bezpieczne dla gatunku: {currentAnimal.name}.
+                      </p>
+                      <button
+                        onClick={() => handleSelectAnimal((animalIndex + 1) % ANIMALS.length)}
+                        className="px-4 py-2 rounded-xl bg-white text-emerald-800 font-extrabold text-xs hover:bg-emerald-50 transition"
+                      >
+                        Następne zwierzę →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right: Pile of Items Around */}
+              <div className="lg:col-span-7 bg-white rounded-3xl p-6 border-2 border-amber-200 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900">
+                      Sterta przedmiotów wokół
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-500">
+                      Przeciągnij palcem/myszką do plecaka albo kliknij kafelek, aby sprawdzić czy jest bezpieczny.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+                  {currentAnimal.items.map((item) => {
+                    const alreadyPacked = packedIds.includes(item.id);
+                    const isShaking = shakingId === item.id;
+
+                    return (
+                      <div
+                        key={item.id}
+                        draggable={!alreadyPacked}
+                        onDragStart={(e) => handleDragStart(e, item)}
+                        onClick={() => handleTryPackItem(item)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTryPackItem(item); }}
+                        className={`rounded-2xl p-4 border-2 flex flex-col items-center justify-center text-center select-none transition cursor-pointer ${
+                          alreadyPacked
+                            ? 'bg-emerald-50 border-emerald-300 opacity-55 cursor-default'
+                            : isShaking
+                              ? 'bg-rose-50 border-rose-500 animate-shake'
+                              : 'bg-amber-50/40 hover:bg-amber-100/70 border-amber-200 hover:border-amber-400 hover:-translate-y-0.5 shadow-sm'
+                        }`}
+                      >
+                        <span className="text-4xl mb-2">{item.icon}</span>
+                        <span className="text-xs sm:text-sm font-extrabold text-slate-800 leading-snug">
+                          {item.name}
+                        </span>
+                        <span className="mt-2 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white border border-slate-200 text-slate-600">
+                          {alreadyPacked ? '✅ W plecaku' : 'Przeciągnij / Kliknij'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

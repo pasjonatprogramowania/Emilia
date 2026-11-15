@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>EkoOdkrywcy 1–3 | Interaktywna Platforma Przyrodnicza & WebAR</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <style>
+            body {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                background-color: #f4f7f4;
+            }
+            h1,
+            h2,
+            h3,
+            .font-display {
+                font-family: 'Nunito', sans-serif;
+            }
+        </style>
+    </head>
+    <body class="text-slate-800 antialiased selection:bg-emerald-200 selection:text-emerald-950">
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { useState, useEffect } = React;
+
+            const TASKS = [
+                {
+                    id: 'zadanie-1',
+                    badge: 'Zadanie 1 • Karta #5',
+                    title: '„Czego brakuje w plecaku?”',
+                    subtitle: 'Interaktywna walizka opiekuna',
+                    description: 'Wylosuj zwierzę domowe lub gospodarskie i spakuj tylko bezpieczne oraz potrzebne rzeczy. Sprawdź, dlaczego czekolada lub krowie mleko mogą zaszkodzić!',
+                    goal: 'Odpowiedzialność za zwierzęta i zdrowe nawyki żywieniowe',
+                    href: 'zadanie-1.html',
+                    accent: 'amber',
+                    icon: '🎒',
+                    tag: 'Drag & Drop',
+                },
+                {
+                    id: 'zadanie-2',
+                    badge: 'Zadanie 2 • Karta #6',
+                    title: '„Budujemy Leśny Korytarz Życia”',
+                    subtitle: 'Gra logiczna / Układanka przestrzenna',
+                    description: 'Nowa autostrada odcięła zwierzętom drogę do rzeki. Zbuduj zielone mosty (ekodukty), tunele dla płazów, liny dla wiewiórek oraz ekrany akustyczne.',
+                    goal: 'Wpływ działalności człowieka na przyrodę i ochrona siedlisk',
+                    href: 'zadanie-2.html',
+                    accent: 'sky',
+                    icon: '🦌',
+                    tag: 'Mapa i Symulacja',
+                },
+                {
+                    id: 'zadanie-3',
+                    badge: 'Zadanie 3 • Karta #3 • WebAR',
+                    title: '„Zbuduj Idealny Ekosystem”',
+                    subtitle: 'Rozszerzona Rzeczywistość (AR.js) & Sandbox',
+                    description: 'Ułóż markery AR obok siebie lub przetestuj 3 sloty w symulatorze. Przekonaj się, jak spróchniałe drzewo i kałuża z błotem przyciągają życie!',
+                    goal: 'Myślenie przyczynowo-skutkowe i obalanie mitu „sterylnego trawnika”',
+                    href: 'zadanie-3.html',
+                    secondaryHref: 'markery.html',
+                    secondaryLabel: 'Karta Markerów AR',
+                    accent: 'emerald',
+                    icon: '🌿',
+                    tag: 'WebAR + 3D',
+                },
+                {
+                    id: 'zadanie-4',
+                    badge: 'Zadanie 4 • Karta #8',
+                    title: '„Zwierzęce Kształty i Cienie”',
+                    subtitle: 'Interaktywny detektor / Magiczna lupka',
+                    description: 'Przesuwaj magiczną latarkę po nocnym, czarno-białym lesie. Odkryj ukryte w zaroślach, na drzewach i pod ziemią zwierzęta po ich fragmentach.',
+                    goal: 'Percepcja wzrokowa oraz warstwowa budowa lasu',
+                    href: 'zadanie-4.html',
+                    accent: 'indigo',
+                    icon: '🔦',
+                    tag: 'Latarka Canvas',
+                },
+                {
+                    id: 'zadanie-5',
+                    badge: 'Zadanie 5 • Karta #10',
+                    title: '„Co je ten zwierzak?”',
+                    subtitle: 'Koło fortuny ze smakołykami',
+                    description: 'Zakręć cyfrowym kołem fortuny, wylosuj leśnego mieszkańca i skompletuj dla niego zdrowe menu ze stołu pełnego leśnych skarbów.',
+                    goal: 'Świadome dokarmianie zwierząt zimą i naturalna dieta gatunków',
+                    href: 'zadanie-5.html',
+                    accent: 'rose',
+                    icon: '🎡',
+                    tag: 'Koło Fortuny',
+                },
+            ];
+
+            const ACCENT_MAP = {
+                amber: {
+                    border: 'border-amber-200 hover:border-amber-400',
+                    pill: 'bg-amber-100 text-amber-800',
+                    iconBg: 'bg-amber-50 text-amber-700 border-amber-200',
+                    btn: 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/20',
+                },
+                sky: {
+                    border: 'border-sky-200 hover:border-sky-400',
+                    pill: 'bg-sky-100 text-sky-800',
+                    iconBg: 'bg-sky-50 text-sky-700 border-sky-200',
+                    btn: 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-600/20',
+                },
+                emerald: {
+                    border: 'border-emerald-300 hover:border-emerald-500 ring-2 ring-emerald-500/15',
+                    pill: 'bg-emerald-100 text-emerald-800',
+                    iconBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                    btn: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/25',
+                },
+                indigo: {
+                    border: 'border-indigo-200 hover:border-indigo-400',
+                    pill: 'bg-indigo-100 text-indigo-800',
+                    iconBg: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                    btn: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20',
+                },
+                rose: {
+                    border: 'border-rose-200 hover:border-rose-400',
+                    pill: 'bg-rose-100 text-rose-800',
+                    iconBg: 'bg-rose-50 text-rose-700 border-rose-200',
+                    btn: 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20',
+                },
+            };
+
+            function App() {
+                const [completed, setCompleted] = useState({});
+
+                useEffect(() => {
+                    try {
+                        const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
+                        setCompleted(saved);
+                    } catch (e) {
+                        setCompleted({});
+                    }
+                }, []);
+
+                const completedCount = Object.values(completed).filter(Boolean).length;
+
+                return (
+                    <div className="min-h-screen flex flex-col">
+                        {/* Header */}
+                        <header className="bg-white/90 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-30">
+                            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center text-2xl shadow-md shadow-emerald-600/20">🌍</div>
+                                    <div>
+                                        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-none">
+                                            EkoOdkrywcy <span className="text-emerald-600">1–3</span>
+                                        </h1>
+                                        <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">Interaktywna pracownia przyrodnicza & WebAR</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <a href="markery.html" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-sm font-bold transition">
+                                        <span>🖨️</span>
+                                        <span>Markery WebAR</span>
+                                    </a>
+                                    <div className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold">
+                                        <span>⭐ Ukończono:</span>
+                                        <span className="text-emerald-700 font-extrabold">
+                                            {completedCount} / {TASKS.length}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </header>
+
+                        {/* Hero Banner */}
+                        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-10">
+                            <section className="bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-800 rounded-3xl p-6 sm:p-10 text-white shadow-xl shadow-emerald-900/10 mb-10 relative overflow-hidden">
+                                <div className="absolute -right-10 -bottom-10 text-[150px] opacity-10 select-none pointer-events-none">🌲</div>
+                                <div className="max-w-2xl relative z-10">
+                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur text-emerald-100 text-xs font-bold uppercase tracking-wider mb-4">✨ Edukacja Wczesnoszkolna (Klasy 1–3)</span>
+                                    <h2 className="text-2xl sm:text-4xl font-black leading-tight mb-3">Poznaj tajemnice przyrody przez zabawę, eksperymenty i rozszerzoną rzeczywistość!</h2>
+                                    <p className="text-emerald-100/95 text-sm sm:text-base leading-relaxed mb-6">Wybierz jedno z pięciu interaktywnych wyzwań przyrodniczych. Każde zadanie działa bezpośrednio w przeglądarce — na telefonie, tablecie oraz komputerze.</p>
+                                    <div className="flex flex-wrap gap-3">
+                                        <a href="zadanie-3.html" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-emerald-900 hover:bg-emerald-50 font-extrabold text-sm shadow-lg transition transform hover:-translate-y-0.5">
+                                            <span>📷</span>
+                                            <span>Otwórz Zadanie 3: WebAR Ekosystem</span>
+                                        </a>
+                                        <a href="markery.html" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-950/40 hover:bg-emerald-950/60 text-white border border-white/25 font-bold text-sm transition">
+                                            <span>🧩</span>
+                                            <span>Pobierz / Wyświetl Markery AR</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Task Cards Grid */}
+                            <section aria-label="Lista zadań edukacyjnych">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">Wybierz zadanie do wykonania</h3>
+                                    <span className="text-xs sm:text-sm text-slate-500 font-medium">5 interaktywnych modułów</span>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {TASKS.map((task) => {
+                                        const style = ACCENT_MAP[task.accent];
+                                        const isDone = Boolean(completed[task.id]);
+
+                                        return (
+                                            <article key={task.id} className={`bg-white rounded-3xl border-2 ${style.border} p-6 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-200 hover:-translate-y-1`}>
+                                                <div>
+                                                    <div className="flex items-start justify-between gap-2 mb-4">
+                                                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold ${style.pill}`}>{task.badge}</span>
+                                                        {isDone ? <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">✅ Zaliczone</span> : <span className="inline-block px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">{task.tag}</span>}
+                                                    </div>
+
+                                                    <div className="flex items-center gap-3.5 mb-3">
+                                                        <div className={`w-14 h-14 rounded-2xl border ${style.iconBg} flex items-center justify-center text-3xl shrink-0`}>{task.icon}</div>
+                                                        <div>
+                                                            <h4 className="text-lg font-black text-slate-900 leading-snug">{task.title}</h4>
+                                                            <p className="text-xs font-bold text-slate-500">{task.subtitle}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <p className="text-sm text-slate-600 leading-relaxed mb-4">{task.description}</p>
+
+                                                    <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-100 mb-5">
+                                                        <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Cel dydaktyczny</p>
+                                                        <p className="text-xs font-semibold text-slate-700 leading-snug">{task.goal}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col gap-2">
+                                                    <a href={task.href} className={`w-full py-3 px-4 rounded-xl font-extrabold text-sm text-center shadow-md transition flex items-center justify-center gap-2 ${style.btn}`}>
+                                                        <span>Uruchom zadanie</span>
+                                                        <span>→</span>
+                                                    </a>
+                                                    {task.secondaryHref && (
+                                                        <a href={task.secondaryHref} className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-center bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition">
+                                                            🖨️ {task.secondaryLabel}
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </article>
+                                        );
+                                    })}
+                                </div>
+                            </section>
+                        </main>
+
+                        {/* Footer */}
+                        <footer className="bg-white border-t border-slate-200 py-6 mt-12">
+                            <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+                                <p className="font-semibold">EkoOdkrywcy 1–3 • Multi-page React 18 + Tailwind CSS + WebAR (AR.js)</p>
+                                <div className="flex flex-wrap gap-4 font-bold text-slate-600">
+                                    <a href="zadanie-1.html" className="hover:text-emerald-700">
+                                        Zad. 1
+                                    </a>
+                                    <a href="zadanie-2.html" className="hover:text-emerald-700">
+                                        Zad. 2
+                                    </a>
+                                    <a href="zadanie-3.html" className="hover:text-emerald-700">
+                                        Zad. 3 (WebAR)
+                                    </a>
+                                    <a href="zadanie-4.html" className="hover:text-emerald-700">
+                                        Zad. 4
+                                    </a>
+                                    <a href="zadanie-5.html" className="hover:text-emerald-700">
+                                        Zad. 5
+                                    </a>
+                                    <a href="markery.html" className="hover:text-emerald-700">
+                                        Markery
+                                    </a>
+                                </div>
+                            </div>
+                        </footer>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        </script>
+    </body>
+</html>

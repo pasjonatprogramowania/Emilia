@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Zadanie 5: Co je ten zwierzak? | EkoOdkrywcy 1–3</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <style>
+            body {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                background-color: #fff1f2;
+            }
+            h1,
+            h2,
+            h3,
+            .font-display {
+                font-family: 'Nunito', sans-serif;
+            }
+            @keyframes bounceWarn {
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+                30% {
+                    transform: scale(1.04) rotate(-1deg);
+                }
+                60% {
+                    transform: scale(0.98) rotate(1deg);
+                }
+            }
+            .animate-warn {
+                animation: bounceWarn 0.45s ease-in-out;
+            }
+        </style>
+    </head>
+    <body class="text-slate-800 antialiased">
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { useState } = React;
+
+            const WHEEL_ANIMALS = [
+                {
+                    id: 'wiewiorka',
+                    name: 'Wiewiórka ruda',
+                    icon: '🐿️',
+                    color: '#ea580c',
+                    dietTip: 'Wiewiórka uwielbia orzechy, nasiona szyszek, żołędzie oraz owoce leśne.',
+                    healthyIds: ['orzechy', 'szyszki', 'owoce'],
+                    harmfulReasons: {
+                        chleb: 'Chleb nie ma wartości odżywczych dla wiewiórek i powoduje groźne choroby układu pokarmowego.',
+                        sol: 'Słone przekąski i sól niszczą nerki dzikich zwierząt!',
+                        fastfood: 'Resztki fast foodu zawierają tłuszcze trans, przyprawy i sól — to trucizna dla leśnych zwierząt.',
+                    },
+                },
+                {
+                    id: 'dzik',
+                    name: 'Dzik leśny',
+                    icon: '🐗',
+                    color: '#78350f',
+                    dietTip: 'Dzik to leśny wszystkożerca — zjada żołędzie, bukiew, dżdżownice i owoce leśne.',
+                    healthyIds: ['zoledzie', 'dzdzownice', 'owoce'],
+                    harmfulReasons: {
+                        fastfood: 'Dokarmianie dzików resztkami fast foodu przyzwyczaja je do miast i wywołuje u nich ciężkie zatrucia!',
+                        sol: 'Sól dla dzikich zwierząt jest bardzo niebezpieczna i zaburza gospodarkę wodną organizmu.',
+                        chleb: 'Spleśniały lub świeży chleb powoduje u dzików bolesne wzdęcia i kwasicę.',
+                    },
+                },
+                {
+                    id: 'sikorka',
+                    name: 'Sikorka bogatka',
+                    icon: '🐦',
+                    color: '#ca8a04',
+                    dietTip: 'Zimą sikorce podajemy niesoloną surową słoninę, nasiona słonecznika oraz orzechy.',
+                    healthyIds: ['slonina', 'orzechy', 'szyszki'],
+                    harmfulReasons: {
+                        chleb: 'Chleb pęcznieje w żołądku ptaków i powoduje śmiertelną chorobę zwaną „anielskim skrzydłem”!',
+                        sol: 'Ptaki nie wydalają nadmiaru soli — słona słonina lub słone paluszki są dla sikorki śmiertelne!',
+                        fastfood: 'Resztki przetworzonego jedzenia są pełne soli i przypraw zabójczych dla małych ptaków.',
+                    },
+                },
+                {
+                    id: 'zaba',
+                    name: 'Żaba trawna',
+                    icon: '🐸',
+                    color: '#16a34a',
+                    dietTip: 'Żaba jest drapieżnikiem — poluje na żywe owady, ślimaki i dżdżownice.',
+                    healthyIds: ['dzdzownice', 'owady', 'slimaki'],
+                    harmfulReasons: {
+                        chleb: 'Żaba nie je pieczywa — chleb zanieczyszcza wodę w stawie i odbiera tlen kijankom!',
+                        fastfood: 'Resztki jedzenia człowieka zatruwają zbiorniki wodne, w których żyją płazy.',
+                        sol: 'Sól przenika przez delikatną skórę żaby i powoduje jej natychmiastowe odwodnienie!',
+                    },
+                },
+                {
+                    id: 'lis',
+                    name: 'Lis rudy',
+                    icon: '🦊',
+                    color: '#dc2626',
+                    dietTip: 'Lis poluje na gryzonie, zjada też dżdżownice oraz leśne jagody i owoce.',
+                    healthyIds: ['gryzonie', 'dzdzownice', 'owoce'],
+                    harmfulReasons: {
+                        fastfood: 'Resztki fast foodu niszczą wątrobę lisa i sprawiają, że traci lęk przed ludźmi.',
+                        chleb: 'Lis jest mięsożercą z dodatkiem owoców leśnych — pieczywo mu szkodzi.',
+                        sol: 'Sól i ostre przyprawy są toksyczne dla psowatych (lisów i wilków).',
+                    },
+                },
+                {
+                    id: 'kaczka',
+                    name: 'Kaczka krzyżówka',
+                    icon: '🦆',
+                    color: '#0284c7',
+                    dietTip: 'Ptakom wodnym zimą podajemy ziarna zbóż, drobno pokrojone warzywa i płatki owsiane.',
+                    healthyIds: ['ziarno', 'warzywa', 'owady'],
+                    harmfulReasons: {
+                        chleb: 'NIGDY nie karm kaczek chlebem! Chleb zakwasza żołądek ptaków wodnych i wywołuje deformację skrzydeł („anielskie skrzydło”).',
+                        sol: 'Sól jest silnie trująca dla ptaków wodnych.',
+                        fastfood: 'Smażone i słone resztki jedzenia zabijają ptaki wodne i zanieczyszczają staw.',
+                    },
+                },
+            ];
+
+            const FOOD_ITEMS = [
+                { id: 'zoledzie', name: 'Żołędzie', icon: '🌰' },
+                { id: 'dzdzownice', name: 'Dżdżownice', icon: '🪱' },
+                { id: 'slonina', name: 'Niesolona słonina', icon: '🥓' },
+                { id: 'szyszki', name: 'Szyszki z nasionami', icon: '🌲' },
+                { id: 'owoce', name: 'Owoce leśne', icon: '🫐' },
+                { id: 'orzechy', name: 'Orzechy laskowe', icon: '🥜' },
+                { id: 'owady', name: 'Owady i chrząszcze', icon: '🪲' },
+                { id: 'slimaki', name: 'Drobne ślimaki', icon: '🐌' },
+                { id: 'gryzonie', name: 'Polne gryzonie', icon: '🐭' },
+                { id: 'ziarno', name: 'Ziarna zbóż i owies', icon: '🌾' },
+                { id: 'warzywa', name: 'Krojone warzywa', icon: '🥕' },
+                { id: 'chleb', name: 'Czerstwy chleb', icon: '🍞', generallyHarmful: true },
+                { id: 'fastfood', name: 'Resztki fast foodu', icon: '🍔', generallyHarmful: true },
+                { id: 'sol', name: 'Sól / słone chipsy', icon: '🧂', generallyHarmful: true },
+            ];
+
+            function App() {
+                const [rotation, setRotation] = useState(0);
+                const [isSpinning, setIsSpinning] = useState(false);
+                const [selectedAnimal, setSelectedAnimal] = useState(WHEEL_ANIMALS[0]);
+                const [plateIds, setPlateIds] = useState([]);
+                const [warningCard, setWarningCard] = useState(null);
+                const [completedAnimals, setCompletedAnimals] = useState([]);
+
+                const spinWheel = () => {
+                    if (isSpinning) return;
+                    setIsSpinning(true);
+                    setWarningCard(null);
+                    setPlateIds([]);
+
+                    const sliceAngle = 360 / WHEEL_ANIMALS.length;
+                    const targetIndex = Math.floor(Math.random() * WHEEL_ANIMALS.length);
+                    const extraSpins = 5 * 360;
+                    // Align pointer at top (0 deg) with center of targetIndex
+                    const targetAngle = extraSpins + (360 - targetIndex * sliceAngle - sliceAngle / 2);
+                    const nextRotation = rotation + targetAngle - (rotation % 360);
+
+                    setRotation(nextRotation);
+
+                    setTimeout(() => {
+                        setIsSpinning(false);
+                        setSelectedAnimal(WHEEL_ANIMALS[targetIndex]);
+                    }, 2600);
+                };
+
+                const handlePickFood = (food) => {
+                    if (isSpinning || plateIds.includes(food.id)) return;
+
+                    const isHealthy = selectedAnimal.healthyIds.includes(food.id);
+                    if (isHealthy) {
+                        const next = [...plateIds, food.id];
+                        setPlateIds(next);
+                        setWarningCard(null);
+
+                        if (next.length === 3) {
+                            const updated = Array.from(new Set([...completedAnimals, selectedAnimal.id]));
+                            setCompletedAnimals(updated);
+                            try {
+                                const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
+                                saved['zadanie-5'] = true;
+                                localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
+                            } catch (e) {}
+                        }
+                    } else {
+                        const specificReason = selectedAnimal.harmfulReasons[food.id] || `${food.name} nie należy do naturalnej diety gatunku: ${selectedAnimal.name}. Wybierz pokarm zgodny z jego zwyczajami w przyrodzie!`;
+
+                        setWarningCard({
+                            food,
+                            reason: specificReason,
+                        });
+                    }
+                };
+
+                const menuComplete = plateIds.length === 3;
+
+                return (
+                    <div className="min-h-screen flex flex-col">
+                        {/* Header */}
+                        <header className="bg-white border-b border-rose-200 sticky top-0 z-30">
+                            <div className="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+                                <a href="index.html" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition">
+                                    <span>←</span>
+                                    <span>Powrót do menu</span>
+                                </a>
+                                <div className="flex items-center gap-2">
+                                    <span className="px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-extrabold">Zadanie 5 • Karta #10</span>
+                                    <h1 className="text-base sm:text-lg font-black text-slate-900">„Co je ten zwierzak?”</h1>
+                                </div>
+                                <div className="px-3.5 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm font-extrabold">🏅 Nakarmione gatunki: {completedAnimals.length}</div>
+                            </div>
+                        </header>
+
+                        <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                                {/* Left: Wheel of Fortune */}
+                                <div className="lg:col-span-5 bg-white rounded-3xl p-6 border-2 border-rose-200 shadow-sm flex flex-col items-center text-center">
+                                    <h2 className="text-xl font-black text-slate-900 mb-1">Koło Fortuny ze Smakołykami</h2>
+                                    <p className="text-xs text-slate-500 mb-5">Zakręć kołem, aby wylosować zwierzę i ułożyć dla niego zdrowe menu!</p>
+
+                                    {/* Wheel Container */}
+                                    <div className="relative w-64 h-64 sm:w-72 sm:h-72 mb-6">
+                                        {/* Top Pointer */}
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 text-3xl drop-shadow">🔻</div>
+
+                                        {/* Spinning SVG Wheel */}
+                                        <svg
+                                            viewBox="0 0 200 200"
+                                            className="w-full h-full rounded-full shadow-xl border-4 border-slate-800"
+                                            style={{
+                                                transform: `rotate(${rotation}deg)`,
+                                                transition: isSpinning ? 'transform 2.5s cubic-bezier(0.15, 0.85, 0.25, 1)' : 'none',
+                                            }}
+                                        >
+                                            {WHEEL_ANIMALS.map((animal, idx) => {
+                                                const slice = 360 / WHEEL_ANIMALS.length;
+                                                const startAngle = idx * slice - 90;
+                                                const endAngle = startAngle + slice;
+                                                const startRad = (startAngle * Math.PI) / 180;
+                                                const endRad = (endAngle * Math.PI) / 180;
+                                                const x1 = 100 + 100 * Math.cos(startRad);
+                                                const y1 = 100 + 100 * Math.sin(startRad);
+                                                const x2 = 100 + 100 * Math.cos(endRad);
+                                                const y2 = 100 + 100 * Math.sin(endRad);
+
+                                                const midRad = ((startAngle + slice / 2) * Math.PI) / 180;
+                                                const tx = 100 + 62 * Math.cos(midRad);
+                                                const ty = 100 + 62 * Math.sin(midRad);
+
+                                                return (
+                                                    <g key={animal.id}>
+                                                        <path d={`M 100 100 L ${x1} ${y1} A 100 100 0 0 1 ${x2} ${y2} Z`} fill={animal.color} stroke="#ffffff" strokeWidth="2" />
+                                                        <text x={tx} y={ty} fontSize="22" textAnchor="middle" dominantBaseline="central" transform={`rotate(${idx * slice + slice / 2}, ${tx}, ${ty})`}>
+                                                            {animal.icon}
+                                                        </text>
+                                                    </g>
+                                                );
+                                            })}
+                                            <circle cx="100" cy="100" r="18" fill="#ffffff" stroke="#1e293b" strokeWidth="3" />
+                                        </svg>
+                                    </div>
+
+                                    <button onClick={spinWheel} disabled={isSpinning} className="w-full py-3.5 px-6 rounded-2xl bg-rose-600 hover:bg-rose-700 disabled:bg-slate-400 text-white font-black text-base shadow-lg shadow-rose-600/25 transition">
+                                        {isSpinning ? '🎡 Koło się kręci...' : '🎡 Zakręć kołem fortuny!'}
+                                    </button>
+                                </div>
+
+                                {/* Right: Selected Animal Plate + Food Table */}
+                                <div className="lg:col-span-7 flex flex-col gap-5">
+                                    {/* Active Animal & Healthy Menu Plate */}
+                                    <div className="bg-white rounded-3xl p-6 border-2 border-rose-200 shadow-sm">
+                                        <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
+                                            <div className="w-20 h-20 rounded-3xl bg-rose-100 border-2 border-rose-300 flex items-center justify-center text-5xl shrink-0">{selectedAnimal.icon}</div>
+                                            <div className="text-center sm:text-left">
+                                                <span className="px-3 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs font-extrabold">Wylosowane zwierzę</span>
+                                                <h2 className="text-2xl font-black text-slate-900 mt-1">{selectedAnimal.name}</h2>
+                                                <p className="text-xs sm:text-sm text-slate-600 mt-0.5">{selectedAnimal.dietTip}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* 3-Item Healthy Menu Plate */}
+                                        <div className="bg-amber-50 rounded-2xl p-4 border-2 border-amber-200">
+                                            <div className="flex items-center justify-between mb-2.5">
+                                                <span className="text-xs font-black uppercase tracking-wider text-amber-900">🍽️ Zdrowe menu (wybierz 3 przysmaki)</span>
+                                                <span className="text-xs font-extrabold text-amber-800">{plateIds.length} / 3</span>
+                                            </div>
+
+                                            <div className="grid grid-cols-3 gap-2.5">
+                                                {[0, 1, 2].map((idx) => {
+                                                    const foodId = plateIds[idx];
+                                                    const food = FOOD_ITEMS.find((f) => f.id === foodId);
+                                                    return (
+                                                        <div key={idx} className={`h-20 rounded-xl border-2 flex flex-col items-center justify-center p-2 text-center ${food ? 'bg-white border-emerald-400 shadow-sm' : 'bg-white/60 border-dashed border-amber-300 text-slate-400'}`}>
+                                                            {food ? (
+                                                                <>
+                                                                    <span className="text-2xl">{food.icon}</span>
+                                                                    <span className="text-[11px] font-extrabold text-slate-800 leading-tight mt-1">{food.name}</span>
+                                                                </>
+                                                            ) : (
+                                                                <span className="text-xs font-bold">Przysmak {idx + 1}</span>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {menuComplete && (
+                                                <div className="mt-4 bg-emerald-600 text-white rounded-xl p-3.5 text-center shadow">
+                                                    <p className="font-black text-sm">🎉 Pyszne i zdrowe menu gotowe! {selectedAnimal.name} dziękuje!</p>
+                                                    <button onClick={spinWheel} className="mt-2 px-4 py-1.5 rounded-lg bg-white text-emerald-900 font-extrabold text-xs hover:bg-emerald-50">
+                                                        Zakręć dla kolejnego zwierzęcia →
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Sympathetic Animated Warning Card for Harmful Food */}
+                                    {warningCard && (
+                                        <div className="bg-amber-500 text-slate-950 rounded-3xl p-5 border-4 border-amber-200 shadow-xl animate-warn flex items-start justify-between gap-3">
+                                            <div className="flex items-start gap-3.5">
+                                                <span className="text-4xl bg-white/80 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0">{warningCard.food.icon}</span>
+                                                <div>
+                                                    <p className="text-xs font-black uppercase tracking-wider text-amber-950">Ups! Tego nie podajemy!</p>
+                                                    <h3 className="text-base sm:text-lg font-black">Dlaczego „{warningCard.food.name}” to błąd?</h3>
+                                                    <p className="text-xs sm:text-sm font-semibold mt-1 leading-relaxed">{warningCard.reason}</p>
+                                                </div>
+                                            </div>
+                                            <button onClick={() => setWarningCard(null)} className="px-3 py-1.5 rounded-xl bg-slate-900 text-white font-bold text-xs shrink-0">
+                                                OK
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Table of Foods */}
+                                    <div className="bg-white rounded-3xl p-6 border-2 border-rose-200 shadow-sm">
+                                        <h3 className="text-lg font-black text-slate-900 mb-3">Stół z produktami — kliknij zdrowe smakołyki:</h3>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                                            {FOOD_ITEMS.map((food) => {
+                                                const picked = plateIds.includes(food.id);
+                                                return (
+                                                    <button key={food.id} onClick={() => handlePickFood(food)} disabled={picked || menuComplete} className={`p-3 rounded-2xl border-2 flex flex-col items-center justify-center text-center transition ${picked ? 'bg-emerald-50 border-emerald-400 opacity-60' : 'bg-slate-50 hover:bg-rose-50 border-slate-200 hover:border-rose-300 hover:-translate-y-0.5'}`}>
+                                                        <span className="text-3xl mb-1">{food.icon}</span>
+                                                        <span className="text-xs font-extrabold text-slate-800 leading-tight">{food.name}</span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        </script>
+    </body>
+</html>

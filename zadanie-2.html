@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Zadanie 2: Budujemy Leśny Korytarz Życia | EkoOdkrywcy 1–3</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <style>
+            body {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                background-color: #f0f9ff;
+            }
+            h1,
+            h2,
+            h3,
+            .font-display {
+                font-family: 'Nunito', sans-serif;
+            }
+            @keyframes carDrive {
+                0% {
+                    transform: translateY(-60px);
+                }
+                100% {
+                    transform: translateY(340px);
+                }
+            }
+            .car-anim-1 {
+                animation: carDrive 3.5s linear infinite;
+            }
+            .car-anim-2 {
+                animation: carDrive 4.2s linear infinite 1.4s;
+            }
+        </style>
+    </head>
+    <body class="text-slate-800 antialiased">
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { useState } = React;
+
+            const STRUCTURES = [
+                {
+                    id: 'ekodukt',
+                    name: 'Górny zielony most (Ekodukt)',
+                    icon: '🌉',
+                    targetZone: 'zone-mammals',
+                    forAnimal: '🦌 Duże ssaki (jelenie, wilki, dziki)',
+                    desc: 'Szeroki most porośnięty trawą i krzewami nad autostradą — zwierzęta czują się na nim jak w lesie.',
+                },
+                {
+                    id: 'liny',
+                    name: 'Liny i liany w koronach drzew',
+                    icon: '🪢',
+                    targetZone: 'zone-squirrels',
+                    forAnimal: '🐿️ Wiewiórki i popielice',
+                    desc: 'Rozpięte wysoko między drzewami liny pozwalają wiewiórkom przebiec nad drogą bez schodzenia na asfalt.',
+                },
+                {
+                    id: 'tunel',
+                    name: 'Tunel pod drogą (Przepust)',
+                    icon: '🚇',
+                    targetZone: 'zone-amphibians',
+                    forAnimal: '🐸 Płazy (żaby, traszki) i jeże',
+                    desc: 'Wilgotny przepust pod autostradą blisko rzeki umożliwia bezpieczną wędrówkę żab na tarło.',
+                },
+                {
+                    id: 'ekrany',
+                    name: 'Ekrany akustyczne',
+                    icon: '🧱',
+                    targetZone: 'zone-acoustic',
+                    forAnimal: '🦉 Ochrona przed hałasem i oślepianiem',
+                    desc: 'Tłumią huk samochodów i osłaniają las przed światłem reflektorów.',
+                },
+                {
+                    id: 'znaki',
+                    name: 'Znaki ostrzegawcze dla kierowców',
+                    icon: '⚠️',
+                    targetZone: 'zone-signs',
+                    forAnimal: '🚗 Ostrzeżenie „Uwaga dzikie zwierzęta”',
+                    desc: 'Informują kierowców o strefie migracji zwierząt i nakazują zmniejszenie prędkości.',
+                },
+            ];
+
+            const ZONES = [
+                {
+                    id: 'zone-squirrels',
+                    label: 'Korony wysokich drzew (Góra mapy)',
+                    hint: 'Tu mieszkają wiewiórki',
+                    accepts: 'liny',
+                    wrongHint: 'Wysoko w koronach drzew najlepiej sprawdzą się liny dla wiewiórek!',
+                },
+                {
+                    id: 'zone-mammals',
+                    label: 'Główny szlak leśny (Środek autostrady)',
+                    hint: 'Tu wędrują jelenie i wilki',
+                    accepts: 'ekodukt',
+                    wrongHint: 'Duże ssaki potrzebują szerokiego, zielonego mostu nad autostradą (ekoduktu)!',
+                },
+                {
+                    id: 'zone-amphibians',
+                    label: 'Strefa przy rzece i mokradłach (Dół mapy)',
+                    hint: 'Tu żaby idą nad rzekę',
+                    accepts: 'tunel',
+                    wrongHint: 'Blisko rzeki płazy potrzebują wilgotnego tunelu pod drogą!',
+                },
+                {
+                    id: 'zone-acoustic',
+                    label: 'Krawędź lasu przy jezdni',
+                    hint: 'Tu hałas aut płoszy ptaki',
+                    accepts: 'ekrany',
+                    wrongHint: 'Na granicy lasu i drogi warto ustawić ekrany akustyczne!',
+                },
+                {
+                    id: 'zone-signs',
+                    label: 'Wjazd na leśny odcinek drogi',
+                    hint: 'Miejsce widoczne dla kierowców',
+                    accepts: 'znaki',
+                    wrongHint: 'Przy wjeździe na trasę ustawiamy znaki ostrzegawcze dla kierowców!',
+                },
+            ];
+
+            function App() {
+                const [placed, setPlaced] = useState({});
+                const [selectedTool, setSelectedTool] = useState(null);
+                const [feedback, setFeedback] = useState(null);
+                const [simulating, setSimulating] = useState(false);
+
+                const placedCount = Object.keys(placed).length;
+                const allCompleted = placedCount === ZONES.length;
+
+                const tryPlaceInZone = (zoneId, toolId) => {
+                    const zone = ZONES.find((z) => z.id === zoneId);
+                    const struct = STRUCTURES.find((s) => s.id === toolId);
+                    if (!zone || !struct) return;
+
+                    if (zone.accepts === toolId) {
+                        const next = { ...placed, [zoneId]: toolId };
+                        setPlaced(next);
+                        setSelectedTool(null);
+                        setFeedback({
+                            type: 'success',
+                            title: `Świetnie! ${struct.name} na swoim miejscu!`,
+                            text: struct.desc,
+                        });
+
+                        if (Object.keys(next).length === ZONES.length) {
+                            try {
+                                const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
+                                saved['zadanie-2'] = true;
+                                localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
+                            } catch (e) {}
+                        }
+                    } else {
+                        setFeedback({
+                            type: 'warn',
+                            title: `To miejsce nie pasuje dla elementu: ${struct.name}`,
+                            text: zone.wrongHint,
+                        });
+                    }
+                };
+
+                const handleDrop = (e, zoneId) => {
+                    e.preventDefault();
+                    const toolId = e.dataTransfer.getData('text/plain');
+                    if (toolId) {
+                        tryPlaceInZone(zoneId, toolId);
+                    }
+                };
+
+                const resetBoard = () => {
+                    setPlaced({});
+                    setSelectedTool(null);
+                    setFeedback(null);
+                    setSimulating(false);
+                };
+
+                return (
+                    <div className="min-h-screen flex flex-col">
+                        {/* Header */}
+                        <header className="bg-white border-b border-sky-200 sticky top-0 z-30">
+                            <div className="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+                                <a href="index.html" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition">
+                                    <span>←</span>
+                                    <span>Powrót do menu</span>
+                                </a>
+                                <div className="flex items-center gap-2">
+                                    <span className="px-3 py-1 rounded-full bg-sky-100 text-sky-800 text-xs font-extrabold">Zadanie 2 • Karta #6</span>
+                                    <h1 className="text-base sm:text-lg font-black text-slate-900">„Budujemy Leśny Korytarz Życia”</h1>
+                                </div>
+                                <button onClick={resetBoard} className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm transition">
+                                    🔄 Wyczyść mapę
+                                </button>
+                            </div>
+                        </header>
+
+                        <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+                            {/* Feedback Banner */}
+                            {feedback && (
+                                <div className={`mb-5 rounded-2xl p-4 border-2 flex items-start justify-between gap-3 ${feedback.type === 'success' ? 'bg-emerald-50 border-emerald-400 text-emerald-950' : 'bg-amber-50 border-amber-400 text-amber-950'}`}>
+                                    <div>
+                                        <p className="font-black text-sm sm:text-base">{feedback.title}</p>
+                                        <p className="text-xs sm:text-sm mt-0.5">{feedback.text}</p>
+                                    </div>
+                                    <button onClick={() => setFeedback(null)} className="text-xs font-bold px-2.5 py-1 rounded-lg bg-white/80 hover:bg-white">
+                                        Zamknij
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                                {/* Left: Palette of Eco-Structures */}
+                                <div className="lg:col-span-4 bg-white rounded-3xl p-5 border-2 border-sky-200 shadow-sm">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h2 className="text-lg font-black text-slate-900">Elementy korytarza</h2>
+                                        <span className="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 text-xs font-extrabold">
+                                            {placedCount} / {ZONES.length}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mb-4">Przeciągnij element na odpowiednie pole na autostradzie lub kliknij element, a potem kliknij wybrane miejsce na mapie.</p>
+
+                                    <div className="flex flex-col gap-2.5">
+                                        {STRUCTURES.map((struct) => {
+                                            const isUsed = Object.values(placed).includes(struct.id);
+                                            const isSelected = selectedTool === struct.id;
+
+                                            return (
+                                                <div key={struct.id} draggable={!isUsed} onDragStart={(e) => e.dataTransfer.setData('text/plain', struct.id)} onClick={() => !isUsed && setSelectedTool(isSelected ? null : struct.id)} className={`p-3.5 rounded-2xl border-2 transition cursor-pointer select-none ${isUsed ? 'bg-emerald-50 border-emerald-300 opacity-60 cursor-default' : isSelected ? 'bg-sky-600 text-white border-sky-700 shadow-md scale-[1.01]' : 'bg-slate-50 hover:bg-sky-50 border-slate-200 hover:border-sky-300'}`}>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-3xl">{struct.icon}</span>
+                                                        <div className="flex-1">
+                                                            <p className="text-xs sm:text-sm font-black leading-snug">{struct.name}</p>
+                                                            <p className={`text-[11px] font-semibold mt-0.5 ${isSelected ? 'text-sky-100' : 'text-slate-500'}`}>{struct.forAnimal}</p>
+                                                        </div>
+                                                        {isUsed && <span className="text-base">✅</span>}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {allCompleted && (
+                                        <div className="mt-5 bg-emerald-600 text-white rounded-2xl p-4 text-center shadow-lg">
+                                            <p className="font-black text-base mb-1">🎉 Korytarz Życia ukończony!</p>
+                                            <p className="text-xs text-emerald-100 mb-3">Zwierzęta mogą teraz bezpiecznie wędrować między lasem a rzeką!</p>
+                                            <button onClick={() => setSimulating(true)} className="w-full py-2.5 px-4 rounded-xl bg-white text-emerald-900 font-black text-xs hover:bg-emerald-50 transition">
+                                                ▶️ Zobacz wędrówkę zwierząt!
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Right: Interactive Map (Forest | Highway | Meadow & River) */}
+                                <div className="lg:col-span-8 bg-white rounded-3xl p-4 sm:p-6 border-2 border-sky-200 shadow-sm">
+                                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                                        <h2 className="text-lg font-black text-slate-900">Mapa: Las — Autostrada — Polana z rzeką</h2>
+                                        {selectedTool && <span className="px-3 py-1 rounded-full bg-sky-600 text-white text-xs font-bold animate-pulse">Kliknij wybrane pole na mapie, aby ustawić element</span>}
+                                    </div>
+
+                                    {/* 3-Column Visual Map */}
+                                    <div className="grid grid-cols-12 rounded-3xl overflow-hidden border-2 border-slate-300 min-h-[470px] relative">
+                                        {/* Left: Dense Forest */}
+                                        <div className="col-span-3 bg-gradient-to-b from-emerald-800 via-emerald-700 to-green-800 p-3 text-white flex flex-col justify-between items-center text-center">
+                                            <div>
+                                                <span className="px-2 py-0.5 rounded-full bg-black/25 text-[11px] font-extrabold">🌲 GĘSTY LAS</span>
+                                                <div className="text-3xl mt-3 space-y-2">
+                                                    <div>🌲🌳🌲</div>
+                                                    <div>🐿️</div>
+                                                </div>
+                                            </div>
+                                            <div className="text-3xl space-y-2">
+                                                <div>🦌🐺</div>
+                                                <div className="text-xs text-emerald-100 font-semibold">Dom leśnych zwierząt</div>
+                                            </div>
+                                            <div className="text-3xl">
+                                                <div>🌲🐸🌿</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Center: Highway with Drop Zones */}
+                                        <div className="col-span-6 bg-slate-700 relative p-3 flex flex-col justify-between border-x-4 border-amber-400">
+                                            {/* Dashed road line */}
+                                            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 border-l-4 border-dashed border-white/40 pointer-events-none"></div>
+
+                                            {/* Animated Cars */}
+                                            <div className="absolute left-3 top-0 text-xl car-anim-1 pointer-events-none opacity-80">🚗</div>
+                                            <div className="absolute right-3 top-0 text-xl car-anim-2 pointer-events-none opacity-80">🚙</div>
+
+                                            <div className="text-center z-10">
+                                                <span className="px-2.5 py-0.5 rounded-full bg-slate-900/80 text-amber-300 text-[11px] font-extrabold tracking-wider">🛣️ AUTOSTRADA</span>
+                                            </div>
+
+                                            {/* 5 Interactive Target Zones */}
+                                            <div className="flex flex-col gap-2.5 my-2 z-10">
+                                                {ZONES.map((zone) => {
+                                                    const placedToolId = placed[zone.id];
+                                                    const placedStruct = STRUCTURES.find((s) => s.id === placedToolId);
+
+                                                    return (
+                                                        <div key={zone.id} onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, zone.id)} onClick={() => selectedTool && !placedStruct && tryPlaceInZone(zone.id, selectedTool)} className={`rounded-2xl p-2.5 border-2 transition text-center ${placedStruct ? 'bg-emerald-500/95 border-emerald-200 text-white shadow-md' : selectedTool ? 'bg-sky-500/40 border-sky-300 border-dashed text-white cursor-pointer hover:bg-sky-500/60' : 'bg-slate-800/85 border-slate-500 border-dashed text-slate-200'}`}>
+                                                            {placedStruct ? (
+                                                                <div className="flex items-center justify-center gap-2">
+                                                                    <span className="text-2xl">{placedStruct.icon}</span>
+                                                                    <div className="text-left">
+                                                                        <p className="text-xs font-black leading-tight">{placedStruct.name}</p>
+                                                                        <p className="text-[10px] text-emerald-100 font-semibold">{simulating ? '🐾 Zwierzęta bezpiecznie przechodzą!' : '✅ Przejście aktywne'}</p>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div>
+                                                                    <p className="text-[11px] font-extrabold">{zone.label}</p>
+                                                                    <p className="text-[10px] text-slate-300">{zone.hint}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            <div className="text-center z-10">
+                                                <span className="text-[10px] text-slate-300 font-semibold">Przeciągnij przejścia na pola powyżej</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Right: Meadow & River */}
+                                        <div className="col-span-3 bg-gradient-to-b from-lime-200 via-emerald-200 to-sky-300 p-3 flex flex-col justify-between items-center text-center">
+                                            <div>
+                                                <span className="px-2 py-0.5 rounded-full bg-white/80 text-emerald-900 text-[11px] font-extrabold">🌼 POLANA I RZEKA</span>
+                                                <div className="text-2xl mt-3">🌸🌼🐝</div>
+                                            </div>
+                                            <div className="text-3xl">
+                                                {simulating ? '🦌🐿️🎉' : '🌾☀️🌾'}
+                                                <p className="text-[11px] font-bold text-emerald-900 mt-1">Wodopój i żerowisko</p>
+                                            </div>
+                                            <div className="w-full bg-sky-500/80 text-white rounded-xl py-2 px-1 font-extrabold text-xs">🌊 RZEKA {simulating && '🐸'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        </script>
+    </body>
+</html>

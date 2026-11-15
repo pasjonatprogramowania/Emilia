@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Zadanie 4: Zwierzęce Kształty i Cienie | EkoOdkrywcy 1–3</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <style>
+            body {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                background-color: #0f172a;
+            }
+            h1,
+            h2,
+            h3,
+            .font-display {
+                font-family: 'Nunito', sans-serif;
+            }
+        </style>
+    </head>
+    <body class="text-slate-100 antialiased">
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { useState, useEffect, useRef } = React;
+
+            const HIDDEN_ANIMALS = [
+                {
+                    id: 'dzieciol',
+                    name: 'Dzięcioł duży',
+                    icon: '🐦',
+                    layer: 'Pnie i korony drzew',
+                    clue: 'Czarno-białe pióra, czerwona czapeczka i mocny dziób stukający w korę drzewa.',
+                    xPct: 0.22,
+                    yPct: 0.26,
+                    colorPrimary: '#dc2626',
+                    colorSecondary: '#f8fafc',
+                },
+                {
+                    id: 'sowa',
+                    name: 'Sowa puszczyk',
+                    icon: '🦉',
+                    layer: 'Korony drzew',
+                    clue: 'Wielkie ciemne oczy ukryte wysoko w dziupli wśród liści.',
+                    xPct: 0.76,
+                    yPct: 0.22,
+                    colorPrimary: '#d97706',
+                    colorSecondary: '#fef3c7',
+                },
+                {
+                    id: 'bobr',
+                    name: 'Bóbr europejski',
+                    icon: '🦫',
+                    layer: 'Runo leśne i brzeg wody',
+                    clue: 'Szeroki, płaski, pokryty łuskami ogon (plusk!) przy leśnym strumieniu.',
+                    xPct: 0.72,
+                    yPct: 0.66,
+                    colorPrimary: '#78350f',
+                    colorSecondary: '#b45309',
+                },
+                {
+                    id: 'zebra',
+                    name: 'Zebra (gość z sawanny)',
+                    icon: '🦓',
+                    layer: 'Zarośla i sawanna (poza polskim lasem)',
+                    clue: 'Charakterystyczne czarno-białe paski ukryte w wysokich zaroślach!',
+                    xPct: 0.48,
+                    yPct: 0.56,
+                    colorPrimary: '#ffffff',
+                    colorSecondary: '#0f172a',
+                },
+                {
+                    id: 'borsuk',
+                    name: 'Borsuk',
+                    icon: '🦡',
+                    layer: 'Ściółka i podziemie (nora)',
+                    clue: 'Biało-czarne pasy na pyszczku w podziemnej norze pod korzeniami.',
+                    xPct: 0.26,
+                    yPct: 0.84,
+                    colorPrimary: '#e2e8f0',
+                    colorSecondary: '#334155',
+                },
+            ];
+
+            const LAYER_OPTIONS = ['Korony drzew', 'Pnie i korony drzew', 'Runo leśne i brzeg wody', 'Ściółka i podziemie (nora)', 'Zarośla i sawanna (poza polskim lasem)'];
+
+            function App() {
+                const canvasRef = useRef(null);
+                const pointerRef = useRef({ x: 300, y: 200, active: false });
+                const [foundIds, setFoundIds] = useState([]);
+                const [activeQuizAnimal, setActiveQuizAnimal] = useState(null);
+                const [selectedName, setSelectedName] = useState('');
+                const [selectedLayer, setSelectedLayer] = useState('');
+                const [quizFeedback, setQuizFeedback] = useState(null);
+
+                // Render nocturnal monochrome landscape + magic flashlight reveal circle
+                useEffect(() => {
+                    const canvas = canvasRef.current;
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    let animId;
+
+                    const drawScene = () => {
+                        const w = canvas.width;
+                        const h = canvas.height;
+                        ctx.clearRect(0, 0, w, h);
+
+                        // 1. Base Monochrome Night Landscape (Silhouettes)
+                        const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
+                        skyGrad.addColorStop(0, '#090d16');
+                        skyGrad.addColorStop(0.7, '#1e293b');
+                        skyGrad.addColorStop(0.71, '#0f172a');
+                        skyGrad.addColorStop(1, '#020617');
+                        ctx.fillStyle = skyGrad;
+                        ctx.fillRect(0, 0, w, h);
+
+                        // Moon (monochrome)
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.beginPath();
+                        ctx.arc(w * 0.86, h * 0.14, 26, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Tree trunks & canopy silhouettes
+                        ctx.fillStyle = '#0f172a';
+                        ctx.fillRect(w * 0.16, h * 0.12, 46, h * 0.6);
+                        ctx.fillRect(w * 0.72, h * 0.1, 52, h * 0.62);
+
+                        // Bushes silhouette
+                        ctx.beginPath();
+                        ctx.arc(w * 0.48, h * 0.62, 65, 0, Math.PI * 2);
+                        ctx.arc(w * 0.55, h * 0.64, 52, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Underground burrow silhouette
+                        ctx.fillStyle = '#1e293b';
+                        ctx.beginPath();
+                        ctx.ellipse(w * 0.26, h * 0.85, 75, 32, 0, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Draw dark shadow silhouettes of hidden animals
+                        HIDDEN_ANIMALS.forEach((animal) => {
+                            const ax = w * animal.xPct;
+                            const ay = h * animal.yPct;
+                            ctx.fillStyle = '#020617';
+                            ctx.beginPath();
+                            ctx.arc(ax, ay, 28, 0, Math.PI * 2);
+                            ctx.fill();
+                        });
+
+                        // 2. Flashlight / Magnifier Circular Clipping Reveal
+                        const { x, y, active } = pointerRef.current;
+                        const radius = active ? 78 : 54;
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(x, y, radius, 0, Math.PI * 2);
+                        ctx.clip();
+
+                        // Illuminated colorful forest background inside flashlight
+                        const lightGrad = ctx.createRadialGradient(x, y, 8, x, y, radius);
+                        lightGrad.addColorStop(0, '#fef9c3');
+                        lightGrad.addColorStop(0.65, '#86efac');
+                        lightGrad.addColorStop(1, '#166534');
+                        ctx.fillStyle = lightGrad;
+                        ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+
+                        // Colorful tree & ground accents inside light
+                        ctx.fillStyle = '#78350f';
+                        ctx.fillRect(w * 0.16, h * 0.12, 46, h * 0.6);
+                        ctx.fillRect(w * 0.72, h * 0.1, 52, h * 0.62);
+
+                        // Underground soil in warm brown
+                        ctx.fillStyle = '#451a03';
+                        ctx.fillRect(0, h * 0.72, w, h * 0.28);
+
+                        // Draw detailed colored animal fragments inside flashlight beam!
+                        HIDDEN_ANIMALS.forEach((animal) => {
+                            const ax = w * animal.xPct;
+                            const ay = h * animal.yPct;
+
+                            if (animal.id === 'zebra') {
+                                // Zebra stripes pattern
+                                ctx.fillStyle = '#ffffff';
+                                ctx.beginPath();
+                                ctx.arc(ax, ay, 30, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.fillStyle = '#0f172a';
+                                for (let s = -22; s <= 22; s += 11) {
+                                    ctx.fillRect(ax + s, ay - 24, 5, 48);
+                                }
+                            } else if (animal.id === 'bobr') {
+                                // Beaver flat scaly tail
+                                ctx.fillStyle = '#78350f';
+                                ctx.beginPath();
+                                ctx.ellipse(ax, ay, 32, 16, -0.2, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.strokeStyle = '#fcd34d';
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+                            } else if (animal.id === 'dzieciol') {
+                                // Woodpecker beak + red crest
+                                ctx.fillStyle = '#dc2626';
+                                ctx.beginPath();
+                                ctx.arc(ax, ay - 10, 14, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.fillStyle = '#f8fafc';
+                                ctx.beginPath();
+                                ctx.moveTo(ax + 10, ay - 6);
+                                ctx.lineTo(ax + 36, ay);
+                                ctx.lineTo(ax + 10, ay + 6);
+                                ctx.closePath();
+                                ctx.fill();
+                            } else if (animal.id === 'sowa') {
+                                // Owl big yellow eyes
+                                ctx.fillStyle = '#92400e';
+                                ctx.beginPath();
+                                ctx.arc(ax, ay, 26, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.fillStyle = '#facc15';
+                                ctx.beginPath();
+                                ctx.arc(ax - 9, ay - 3, 7, 0, Math.PI * 2);
+                                ctx.arc(ax + 9, ay - 3, 7, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.fillStyle = '#000';
+                                ctx.beginPath();
+                                ctx.arc(ax - 9, ay - 3, 3, 0, Math.PI * 2);
+                                ctx.arc(ax + 9, ay - 3, 3, 0, Math.PI * 2);
+                                ctx.fill();
+                            } else if (animal.id === 'borsuk') {
+                                // Badger striped snout
+                                ctx.fillStyle = '#f8fafc';
+                                ctx.beginPath();
+                                ctx.arc(ax, ay, 24, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.fillStyle = '#0f172a';
+                                ctx.fillRect(ax - 14, ay - 18, 8, 36);
+                                ctx.fillRect(ax + 6, ay - 18, 8, 36);
+                            }
+                        });
+
+                        ctx.restore();
+
+                        // Flashlight rim ring
+                        ctx.strokeStyle = 'rgba(253, 224, 71, 0.85)';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(x, y, radius, 0, Math.PI * 2);
+                        ctx.stroke();
+
+                        // Already discovered badges stay gently lit
+                        HIDDEN_ANIMALS.forEach((animal) => {
+                            if (foundIds.includes(animal.id)) {
+                                const ax = w * animal.xPct;
+                                const ay = h * animal.yPct;
+                                ctx.fillStyle = '#10b981';
+                                ctx.beginPath();
+                                ctx.arc(ax, ay, 18, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.fillStyle = '#ffffff';
+                                ctx.font = 'bold 14px sans-serif';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText('✓', ax, ay);
+                            }
+                        });
+
+                        animId = requestAnimationFrame(drawScene);
+                    };
+
+                    animId = requestAnimationFrame(drawScene);
+                    return () => cancelAnimationFrame(animId);
+                }, [foundIds]);
+
+                const updatePointer = (clientX, clientY) => {
+                    const canvas = canvasRef.current;
+                    if (!canvas) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    const px = (clientX - rect.left) * scaleX;
+                    const py = (clientY - rect.top) * scaleY;
+                    pointerRef.current = { x: px, y: py, active: true };
+
+                    // Check proximity to an undiscovered animal
+                    HIDDEN_ANIMALS.forEach((animal) => {
+                        if (foundIds.includes(animal.id)) return;
+                        const ax = canvas.width * animal.xPct;
+                        const ay = canvas.height * animal.yPct;
+                        const dist = Math.hypot(px - ax, py - ay);
+                        if (dist < 42 && (!activeQuizAnimal || activeQuizAnimal.id !== animal.id)) {
+                            setActiveQuizAnimal(animal);
+                            setSelectedName('');
+                            setSelectedLayer('');
+                            setQuizFeedback(null);
+                        }
+                    });
+                };
+
+                const handleVerifyAnswer = (e) => {
+                    e.preventDefault();
+                    if (!activeQuizAnimal) return;
+
+                    if (selectedName === activeQuizAnimal.id && selectedLayer === activeQuizAnimal.layer) {
+                        const next = [...foundIds, activeQuizAnimal.id];
+                        setFoundIds(next);
+                        setQuizFeedback({
+                            ok: true,
+                            msg: `Brawo! Rozpoznano: ${activeQuizAnimal.name} (${activeQuizAnimal.layer}).`,
+                        });
+                        setActiveQuizAnimal(null);
+
+                        if (next.length === HIDDEN_ANIMALS.length) {
+                            try {
+                                const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
+                                saved['zadanie-4'] = true;
+                                localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
+                            } catch (err) {}
+                        }
+                    } else {
+                        setQuizFeedback({
+                            ok: false,
+                            msg: 'Sprawdź jeszcze raz gatunek oraz warstwę lasu, w której ukrywa się to zwierzę!',
+                        });
+                    }
+                };
+
+                return (
+                    <div className="min-h-screen flex flex-col">
+                        {/* Header */}
+                        <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-30">
+                            <div className="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+                                <a href="index.html" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-sm transition">
+                                    <span>←</span>
+                                    <span>Powrót do menu</span>
+                                </a>
+                                <div className="flex items-center gap-2">
+                                    <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-extrabold">Zadanie 4 • Karta #8</span>
+                                    <h1 className="text-base sm:text-lg font-black text-white">„Zwierzęce Kształty i Cienie”</h1>
+                                </div>
+                                <div className="px-3.5 py-1.5 rounded-xl bg-indigo-950 border border-indigo-700 text-indigo-200 text-xs sm:text-sm font-extrabold">
+                                    🔦 Odkryto: {foundIds.length} / {HIDDEN_ANIMALS.length}
+                                </div>
+                            </div>
+                        </header>
+
+                        <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                                {/* Left: Interactive Flashlight Canvas */}
+                                <div className="lg:col-span-7 bg-slate-900 rounded-3xl p-4 border-2 border-slate-700 shadow-xl">
+                                    <div className="flex items-center justify-between mb-3 px-1">
+                                        <p className="text-xs sm:text-sm text-indigo-200 font-bold">👆 Przesuwaj palec lub kursor po nocnym krajobrazie, aby oświetlić cienie!</p>
+                                    </div>
+
+                                    <div className="rounded-2xl overflow-hidden border-2 border-slate-700 touch-none">
+                                        <canvas
+                                            ref={canvasRef}
+                                            width={680}
+                                            height={450}
+                                            onMouseMove={(e) => updatePointer(e.clientX, e.clientY)}
+                                            onMouseLeave={() => {
+                                                pointerRef.current.active = false;
+                                            }}
+                                            onTouchStart={(e) => {
+                                                const t = e.touches[0];
+                                                if (t) updatePointer(t.clientX, t.clientY);
+                                            }}
+                                            onTouchMove={(e) => {
+                                                const t = e.touches[0];
+                                                if (t) updatePointer(t.clientX, t.clientY);
+                                            }}
+                                            className="w-full h-auto block cursor-crosshair"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Right: Identification Form & Discovered List */}
+                                <div className="lg:col-span-5 flex flex-col gap-5">
+                                    {activeQuizAnimal ? (
+                                        <form onSubmit={handleVerifyAnswer} className="bg-slate-800 rounded-3xl p-6 border-2 border-amber-400 shadow-xl">
+                                            <span className="inline-block px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-extrabold mb-2">🔦 Namierzono trop w świetle latarki!</span>
+                                            <h2 className="text-xl font-black text-white mb-2">Co to za zwierzę i gdzie żyje?</h2>
+                                            <p className="text-xs text-slate-300 bg-slate-900/80 p-3 rounded-xl border border-slate-700 mb-4">
+                                                <strong>Wskazówka z lupki:</strong> {activeQuizAnimal.clue}
+                                            </p>
+
+                                            <div className="space-y-3 mb-4">
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-300 mb-1">1. Wybierz rozpoznane zwierzę:</label>
+                                                    <select value={selectedName} onChange={(e) => setSelectedName(e.target.value)} required className="w-full rounded-xl bg-slate-900 border border-slate-600 text-white px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-400">
+                                                        <option value="">-- Wybierz zwierzę --</option>
+                                                        {HIDDEN_ANIMALS.map((a) => (
+                                                            <option key={a.id} value={a.id}>
+                                                                {a.icon} {a.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-300 mb-1">2. W jakiej warstwie lasu / środowisku żyje?</label>
+                                                    <select value={selectedLayer} onChange={(e) => setSelectedLayer(e.target.value)} required className="w-full rounded-xl bg-slate-900 border border-slate-600 text-white px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-400">
+                                                        <option value="">-- Wybierz warstwę lasu --</option>
+                                                        {LAYER_OPTIONS.map((layer) => (
+                                                            <option key={layer} value={layer}>
+                                                                {layer}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {quizFeedback && !quizFeedback.ok && <p className="text-xs font-bold text-rose-300 bg-rose-950/60 border border-rose-700 p-2.5 rounded-xl mb-3">⚠️ {quizFeedback.msg}</p>}
+
+                                            <button type="submit" className="w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm transition shadow-md">
+                                                Sprawdź odpowiedź ✓
+                                            </button>
+                                        </form>
+                                    ) : (
+                                        <div className="bg-slate-800 rounded-3xl p-6 border-2 border-slate-700">
+                                            <h2 className="text-lg font-black text-white mb-1">Nocny Detektor Przyrody</h2>
+                                            <p className="text-xs text-slate-300 leading-relaxed">Oświetl magiczną latarką 5 ukrytych sylwetek: w koronach drzew, na pniu, przy brzegu strumienia, w zaroślach oraz w podziemnej norze.</p>
+                                            {quizFeedback && quizFeedback.ok && <div className="mt-3 p-3 rounded-xl bg-emerald-900/60 border border-emerald-500 text-emerald-200 text-xs font-bold">🎉 {quizFeedback.msg}</div>}
+                                        </div>
+                                    )}
+
+                                    {/* Discovered Animals Log */}
+                                    <div className="bg-slate-800 rounded-3xl p-5 border-2 border-slate-700">
+                                        <h3 className="text-sm font-black uppercase tracking-wider text-slate-400 mb-3">Księga odkrytych gatunków</h3>
+                                        <div className="space-y-2.5">
+                                            {HIDDEN_ANIMALS.map((a) => {
+                                                const discovered = foundIds.includes(a.id);
+                                                return (
+                                                    <div key={a.id} className={`p-3 rounded-2xl border flex items-center justify-between ${discovered ? 'bg-emerald-950/50 border-emerald-600 text-white' : 'bg-slate-900/60 border-slate-700 text-slate-500'}`}>
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-2xl">{discovered ? a.icon : '❓'}</span>
+                                                            <div>
+                                                                <p className="text-xs font-black">{discovered ? a.name : 'Nieodkryty cień'}</p>
+                                                                <p className="text-[11px]">{discovered ? a.layer : 'Przesuń latarkę po mapie'}</p>
+                                                            </div>
+                                                        </div>
+                                                        {discovered && <span className="text-emerald-400 font-black text-xs">✅</span>}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        </script>
+    </body>
+</html>
