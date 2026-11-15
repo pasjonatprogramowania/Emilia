@@ -32,7 +32,19 @@
                 .marker-card {
                     break-inside: avoid;
                     box-shadow: none !important;
-                    border: 2px solid #cbd5e1 !important;
+                    border: 1px solid #cbd5e1 !important;
+                }
+                /* A4: two cards per row so each marker prints ~9 cm wide */
+                .marker-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                    gap: 8mm !important;
+                }
+                .marker-canvas {
+                    width: 95mm !important;
+                    height: 95mm !important;
+                }
+                @page {
+                    margin: 10mm;
                 }
             }
         </style>
@@ -148,7 +160,8 @@
                 { id: 'jez', markerId: 22, name: 'Jeż', icon: '🦔', role: 'Wysoka trawa — owady i ślimaki', grid: [[1,1,0,0],[0,1,1,0],[0,0,0,1],[0,0,1,1]] }
             ];
 
-            // Renders a crisp AR.js marker with thick black border + inner 4x4 pattern
+            // Renders a crisp AR.js marker: white quiet zone, black frame (25% per side),
+            // inner 4x4 pattern occupying exactly 50% of the marker (AR.js patternRatio: 0.5)
             function MarkerCanvas({ grid, label, onDownloadReady }) {
                 const canvasRef = useRef(null);
 
@@ -156,10 +169,12 @@
                     const canvas = canvasRef.current;
                     if (!canvas) return;
                     const ctx = canvas.getContext('2d');
-                    const size = 240;
-                    const border = 48; // 20% thick black border required by AR.js
-                    const innerSize = size - border * 2;
-                    const cell = innerSize / 4;
+                    const size = 640;
+                    const quiet = 32; // white margin around the marker
+                    const frame = size - quiet * 2; // black square side
+                    const inner = frame * 0.5; // patternRatio 0.5
+                    const innerOffset = quiet + (frame - inner) / 2;
+                    const cell = inner / 4;
 
                     // White quiet-zone margin
                     ctx.fillStyle = '#ffffff';
@@ -167,17 +182,17 @@
 
                     // Thick black ARToolKit frame
                     ctx.fillStyle = '#000000';
-                    ctx.fillRect(12, 12, size - 24, size - 24);
+                    ctx.fillRect(quiet, quiet, frame, frame);
 
                     // Inner white background
                     ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(border, border, innerSize, innerSize);
+                    ctx.fillRect(innerOffset, innerOffset, inner, inner);
 
                     // 4x4 binary pattern cells
                     for (let r = 0; r < 4; r++) {
                         for (let c = 0; c < 4; c++) {
                             ctx.fillStyle = grid[r][c] === 1 ? '#000000' : '#ffffff';
-                            ctx.fillRect(border + c * cell, border + r * cell, cell, cell);
+                            ctx.fillRect(innerOffset + c * cell, innerOffset + r * cell, cell, cell);
                         }
                     }
 
@@ -186,7 +201,7 @@
                     }
                 }, [grid]);
 
-                return <canvas ref={canvasRef} width={240} height={240} aria-label={`Marker AR dla ${label}`} className="w-44 h-44 mx-auto border border-slate-200 rounded-lg bg-white" />;
+                return <canvas ref={canvasRef} width={640} height={640} aria-label={`Marker AR dla ${label}`} className="marker-canvas w-56 h-56 mx-auto border border-slate-200 rounded-lg bg-white" />;
             }
 
             function MarkerCardItem({ card }) {
@@ -265,6 +280,17 @@
                                     , włącz tryb <strong>Kamera WebAR</strong> i ułóż 2 lub 3 karty obok siebie przed obiektywem!
                                 </p>
 
+                                <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 mb-4 text-xs text-amber-950">
+                                    <p className="font-black mb-1.5">🖨️ Jak wydrukować, żeby złapało od razu</p>
+                                    <ul className="space-y-1 list-disc list-inside">
+                                        <li>Drukuj w skali <strong>100%</strong> (bez „dopasuj do strony”). Marker powinien mieć <strong>co najmniej 9 × 9 cm</strong> — na wydruku A4 wychodzą 2 karty w rzędzie.</li>
+                                        <li>Papier <strong>matowy</strong>, nie błyszczący — odblaski psują wykrywanie.</li>
+                                        <li>Trzymaj telefon <strong>prostopadle</strong> do kartki, 25–40 cm, marker w całości w kadrze (nie ucinaj czarnej ramki).</li>
+                                        <li>Światło <strong>równe, z boku</strong>; unikaj cienia telefonu na kartce.</li>
+                                        <li>Karty obok siebie trzymaj w jednej linii, z odstępem ok. 1 cm, na białym tle.</li>
+                                    </ul>
+                                </div>
+
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                     <div className="bg-emerald-50 rounded-2xl p-3.5 border border-emerald-200">
                                         <strong className="font-black text-emerald-900 block mb-1">1. Wyraźna czarna ramka</strong>
@@ -285,7 +311,7 @@
 
                             {/* 6 Printable Habitat Marker Cards */}
                             <h2 className="text-xl font-black text-slate-900 mb-4">Markery siedlisk (1–6)</h2>
-                            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <section className="marker-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {MARKER_CARDS.map((card) => (
                                     <MarkerCardItem key={card.id} card={card} />
                                 ))}
@@ -296,7 +322,7 @@
                             <p className="text-xs text-slate-600 mb-4">
                                 Każde zwierzę ma własny wzór. Pokaż marker kamerze w Zadaniu 3 — nad kartą pojawi się model 3D zwierzęcia.
                             </p>
-                            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <section className="marker-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {ANIMAL_CARDS.map((card) => (
                                     <MarkerCardItem key={card.id} card={card} />
                                 ))}
