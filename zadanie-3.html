@@ -42,6 +42,14 @@
                 background-color: transparent !important;
                 overflow: hidden;
             }
+            /* While AR is on, only the fullscreen AR overlay may be visible —
+               otherwise page panels paint above the camera feed. */
+            body.arjs-active main > *:not(.ar-fullscreen) {
+                display: none !important;
+            }
+            body.arjs-active header.app-header {
+                display: none !important;
+            }
             #arjs-video {
                 position: fixed !important;
                 top: 0 !important;
@@ -580,7 +588,7 @@
               return (
                 <div className="min-h-screen flex flex-col">
                   {/* Top Navigation */}
-                  <header className="bg-white border-b border-emerald-200 sticky top-0 z-40">
+                  <header className="app-header bg-white border-b border-emerald-200 sticky top-0 z-40">
                     <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
                       <a
                         href="index.html"
@@ -702,7 +710,7 @@
 
                     {/* WEBAR CAMERA VIEW (AR.js + A-Frame) */}
                     {mode === 'webar' && cameraStatus === 'ready' && (
-                      <section className="fixed inset-0 z-50 flex flex-col bg-transparent">
+                      <section className="ar-fullscreen fixed inset-0 z-50 flex flex-col bg-transparent">
                         <div className="bg-emerald-950 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
