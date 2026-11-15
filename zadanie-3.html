@@ -33,22 +33,37 @@
                 max-width: 100%;
                 overflow-x: hidden;
             }
-            /* AR.js / A-Frame must fill its container instead of forcing its own pixel size */
+            /* AR.js mounts the camera feed as <video id="arjs-video"> in body, at z-index:-2.
+               While AR runs, the page must stay transparent so that feed is visible. */
+            html.arjs-active {
+                background-color: #000;
+            }
+            body.arjs-active {
+                background-color: transparent !important;
+                overflow: hidden;
+            }
+            #arjs-video {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                object-fit: cover !important;
+                z-index: -2 !important;
+            }
+            /* A-Frame canvas must fill the container without repositioning it */
             .ar-viewport {
                 position: relative;
                 overflow: hidden;
+                background: transparent;
             }
-            .ar-viewport a-scene,
-            .ar-viewport canvas,
-            .ar-viewport video {
+            .ar-viewport a-scene {
                 width: 100% !important;
                 height: 100% !important;
-                max-width: 100% !important;
-                position: relative !important;
+                display: block;
             }
-            .ar-viewport video,
-            .ar-viewport canvas {
-                object-fit: cover !important;
+            .ar-viewport .a-canvas {
+                background: transparent !important;
             }
         </style>
     </head>
@@ -169,6 +184,30 @@
                   [0,1,0,1]
                 ]
               }
+            ];
+
+            // Animals matched to the habitats they really use in a Polish forest
+            const HABITAT_TARGETS = [
+              { id: 'tree', icon: '🪵', label: 'Stare drzewo' },
+              { id: 'nestbox', icon: '🏠', label: 'Budka lęgowa' },
+              { id: 'puddle', icon: '💧', label: 'Kałuża z błotem' },
+              { id: 'meadow', icon: '🌼', label: 'Dzika łąka' }
+            ];
+
+            const HABITAT_ANIMALS = [
+              { id: 'puszczyk', name: 'Puszczyk (sowa)', icon: '🦉', habitats: ['tree', 'nestbox'], fact: 'W dzień ukrywa się w dziupli lub budce, nocą poluje na gryzonie.', hint: 'Szuka ciemnej kryjówki wysoko nad ziemią.' },
+              { id: 'dzieciol', name: 'Dzięcioł', icon: '🐦', habitats: ['tree'], fact: 'Kuje dziuple w pniach — potem korzystają z nich inne zwierzęta.', hint: 'To ptak, który pracuje na pniu, nie na łące.' },
+              { id: 'nietoperz', name: 'Nietoperz', icon: '🦇', habitats: ['tree'], fact: 'Na dzień wisi w dziupli lub szczelinie kory.', hint: 'Potrzebuje ciemnej szczeliny, nie otwartej przestrzeni.' },
+              { id: 'jelonek', name: 'Jelonek rogacz (chrząszcz)', icon: '🪲', habitats: ['tree'], fact: 'Jego larwy rozwijają się w próchnie martwego drzewa.', hint: 'Jego domem jest martwe drewno.' },
+              { id: 'sikorka', name: 'Sikorka', icon: '🐤', habitats: ['nestbox'], fact: 'Chętnie zakłada gniazdo w budce lęgowej i zjada tysiące gąsienic.', hint: 'Potrzebuje gotowego, bezpiecznego lokum dla piskląt.' },
+              { id: 'szpak', name: 'Szpak', icon: '🐦‍⬛', habitats: ['nestbox'], fact: 'Zamieszkuje budki i dziuple, często blisko ludzi.', hint: 'Też korzysta z gotowej budki.' },
+              { id: 'jaskolka', name: 'Jaskółka', icon: '🕊️', habitats: ['puddle'], fact: 'Lepi gniazdo z błota wygrzebanego z kałuży.', hint: 'Potrzebuje błota jako budulca.' },
+              { id: 'zaba', name: 'Żaba', icon: '🐸', habitats: ['puddle', 'meadow'], fact: 'Składa skrzek w wodzie, a poluje w wilgotnej trawie.', hint: 'Woda i wilgotna trawa — nie pień drzewa.' },
+              { id: 'wazka', name: 'Ważka', icon: '🪰', habitats: ['puddle'], fact: 'Jej larwy żyją w wodzie, dorosłe polują nad kałużą.', hint: 'Całe życie związane z wodą.' },
+              { id: 'motyle', name: 'Motyle', icon: '🦋', habitats: ['meadow', 'puddle'], fact: 'Nektar zbierają na łące, a minerały piją z błota.', hint: 'Kwiaty i wilgotne podłoże.' },
+              { id: 'pszczoly', name: 'Pszczoły', icon: '🐝', habitats: ['meadow'], fact: 'Zbierają nektar i pyłek z kwiatów łąki.', hint: 'Szukają kwiatów, nie dziupli.' },
+              { id: 'trzmiele', name: 'Trzmiele', icon: '🐝', habitats: ['meadow'], fact: 'Zapylają kwiaty nawet w chłodne dni.', hint: 'Też potrzebują kwitnącej łąki.' },
+              { id: 'jez', name: 'Jeż', icon: '🦔', habitats: ['meadow'], fact: 'Poluje w wysokiej trawie na owady i ślimaki.', hint: 'Szuka gęstej trawy i kryjówki na ziemi.' }
             ];
 
             // Generate deterministic AR.js .patt Blob URL from 4x4 grid so markery.html matches 100%
@@ -299,6 +338,9 @@
               const [detectedMarkers, setDetectedMarkers] = useState([]);
               const [adjacentPairs, setAdjacentPairs] = useState([]);
               const [patternUrls, setPatternUrls] = useState({});
+              const [matchSelected, setMatchSelected] = useState(null);
+              const [matches, setMatches] = useState({});
+              const [matchMsg, setMatchMsg] = useState(null);
 
               const sceneContainerRef = useRef(null);
 
@@ -420,8 +462,14 @@
               useEffect(() => {
                 const locked = mode === 'webar' && cameraStatus === 'ready';
                 document.body.style.overflow = locked ? 'hidden' : '';
+                // AR.js paints the camera feed as <video id="arjs-video"> behind the page (z-index:-2),
+                // so the page background has to be transparent while AR is on.
+                document.documentElement.classList.toggle('arjs-active', locked);
+                document.body.classList.toggle('arjs-active', locked);
                 return () => {
                   document.body.style.overflow = '';
+                  document.documentElement.classList.remove('arjs-active');
+                  document.body.classList.remove('arjs-active');
                 };
               }, [mode, cameraStatus]);
 
@@ -442,8 +490,8 @@
 
                 const checkVideo = () => {
                   if (cancelled) return;
-                  const container = sceneContainerRef.current;
-                  const video = container && container.querySelector('video');
+                  // AR.js mounts the camera feed as <video id="arjs-video"> directly in <body>
+                  const video = document.querySelector('#arjs-video');
                   const hasFrames = video && video.videoWidth > 0 && video.readyState >= 2;
                   setArDiag(hasFrames ? null : 'Kamera nie przekazuje obrazu. Sprawdź uprawnienie „Kamera” dla tej strony (ikona kłódki przy adresie) i wciśnij „Spróbuj ponownie”.');
                 };
@@ -504,6 +552,29 @@
               const handleResetSlots = () => {
                 setSlots([null, null, null]);
                 setReport(null);
+              };
+
+              // Match an animal to its habitat
+              const handleAssignHabitat = (targetId) => {
+                if (!matchSelected) return;
+                const animal = HABITAT_ANIMALS.find((a) => a.id === matchSelected);
+                if (!animal) return;
+
+                if (animal.habitats.includes(targetId)) {
+                  const next = { ...matches, [animal.id]: targetId };
+                  setMatches(next);
+                  setMatchSelected(null);
+                  setMatchMsg({ ok: true, text: `${animal.icon} ${animal.name}: ${animal.fact}` });
+                  if (Object.keys(next).length === HABITAT_ANIMALS.length) {
+                    try {
+                      const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
+                      saved['zadanie-3'] = true;
+                      localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
+                    } catch (e) {}
+                  }
+                } else {
+                  setMatchMsg({ ok: false, text: `${animal.icon} ${animal.name} nie mieszka tutaj. ${animal.hint}` });
+                }
               };
 
               return (
@@ -631,7 +702,7 @@
 
                     {/* WEBAR CAMERA VIEW (AR.js + A-Frame) */}
                     {mode === 'webar' && cameraStatus === 'ready' && (
-                      <section className="fixed inset-0 z-50 flex flex-col bg-slate-900">
+                      <section className="fixed inset-0 z-50 flex flex-col bg-transparent">
                         <div className="bg-emerald-950 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
@@ -662,12 +733,11 @@
                         )}
 
                         {/* A-Frame AR.js Viewport */}
-                        <div ref={sceneContainerRef} className="ar-viewport relative w-full flex-1 min-h-0 bg-black">
+                        <div ref={sceneContainerRef} className="ar-viewport relative w-full flex-1 min-h-0 bg-transparent">
                           <a-scene
                             embedded
                             vr-mode-ui="enabled: false"
                             loading-screen="enabled: false"
-                            renderer="antialias: true; alpha: true;"
                             arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; maxDetectionRate: 60;"
                           >
                             {ECOSYSTEM_ELEMENTS.map((el) => (
@@ -974,6 +1044,83 @@
                         )}
                       </div>
                     </div>
+                    {/* ANIMAL ↔ HABITAT MATCHING (works with or without the camera) */}
+                    <section className="mt-8 bg-white rounded-3xl p-4 sm:p-6 border-2 border-emerald-200 shadow-sm">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h2 className="text-lg sm:text-xl font-black text-slate-900">
+                          Dopasuj zwierzęta do ich terenu
+                        </h2>
+                        <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold shrink-0">
+                          {Object.keys(matches).length} / {HABITAT_ANIMALS.length}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mb-4">
+                        Kliknij zwierzę, a potem kliknij miejsce, w którym naprawdę mieszka.
+                      </p>
+
+                      {/* Animals to place */}
+                      <div className="flex flex-wrap gap-2 mb-5">
+                        {HABITAT_ANIMALS.map((animal) => {
+                          const done = Boolean(matches[animal.id]);
+                          const isSelected = matchSelected === animal.id;
+                          return (
+                            <button
+                              key={animal.id}
+                              disabled={done}
+                              onClick={() => { setMatchSelected(isSelected ? null : animal.id); setMatchMsg(null); }}
+                              className={`px-2.5 py-1.5 rounded-xl border-2 text-[11px] font-extrabold transition flex items-center gap-1.5 ${
+                                done
+                                  ? 'bg-emerald-50 border-emerald-300 text-emerald-700 opacity-70'
+                                  : isSelected
+                                    ? 'bg-emerald-600 border-emerald-700 text-white shadow-md'
+                                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-emerald-300'
+                              }`}
+                            >
+                              <span className="text-base">{animal.icon}</span>
+                              <span>{animal.name}</span>
+                              {done && <span>✅</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Habitats */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        {HABITAT_TARGETS.map((target) => {
+                          const assigned = HABITAT_ANIMALS.filter((a) => matches[a.id] === target.id);
+                          return (
+                            <div
+                              key={target.id}
+                              onClick={() => handleAssignHabitat(target.id)}
+                              className={`rounded-2xl border-2 border-dashed p-3 text-center transition ${
+                                matchSelected ? 'border-emerald-500 bg-emerald-50/60 cursor-pointer hover:bg-emerald-50' : 'border-slate-300 bg-slate-50'
+                              }`}
+                            >
+                              <span className="text-2xl">{target.icon}</span>
+                              <p className="text-[11px] font-black text-slate-800 mt-1">{target.label}</p>
+                              <div className="flex flex-wrap justify-center gap-1 mt-1.5 min-h-[22px]">
+                                {assigned.map((a) => (
+                                  <span key={a.id} className="text-base">{a.icon}</span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {matchMsg && (
+                        <div className={`mt-3 p-3 rounded-2xl border text-xs font-bold ${matchMsg.ok ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-amber-50 border-amber-300 text-amber-900'}`}>
+                          {matchMsg.ok ? '✅ ' : '⚠️ '}
+                          {matchMsg.text}
+                        </div>
+                      )}
+
+                      {Object.keys(matches).length === HABITAT_ANIMALS.length && (
+                        <div className="mt-3 p-3 rounded-2xl bg-emerald-600 text-white text-xs font-black text-center">
+                          🏆 Wszystkie zwierzęta trafiły do swoich terenów!
+                        </div>
+                      )}
+                    </section>
                   </main>
                 </div>
               );
