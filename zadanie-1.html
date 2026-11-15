@@ -50,11 +50,10 @@
         name: 'Królik miniaturka',
         emoji: '🐇',
         habitat: 'Zwierzę domowe (roślinożerca)',
-        hint: 'Królik potrzebuje stałego dostępu do siana, świeżej wody oraz bezpiecznego transportera lub kojca.',
         items: [
           { id: 'siano', name: 'Pachnące siano', icon: '🌾', safe: true, info: 'Podstawa diety królika (80% jadłospisu) — ściera zęby i wspiera trawienie.' },
           { id: 'woda', name: 'Miska ze świeżą wodą', icon: '🥣', safe: true, info: 'Czysta woda w ciężkiej ceramicznej misce jest niezbędna każdego dnia.' },
-          { id: 'ziola', name: 'Suszone zioła i mniszek', icon: '🌿', safe: true, info: 'Naturalne zioła dostarczają witamin i minerałów.' },
+          { id: 'ziola', name: 'Suszone zioła', icon: '🌿', safe: true, info: 'Naturalne zioła dostarczają witamin i minerałów.' },
           { id: 'czekolada', name: 'Czekolada mleczna', icon: '🍫', safe: false, reason: 'Czekolada zawiera teobrominę i cukier — jest silnie trująca dla królików i powoduje groźne zatrucia!' },
           { id: 'mleko', name: 'Mleko krowie', icon: '🥛', safe: false, reason: 'Dorosłe króliki nie trawią laktozy! Mleko krowie wywołuje u nich bolesne wzdęcia i biegunkę.' },
           { id: 'kolowrotek', name: 'Mała klatka z kołowrotkiem', icon: '🎡', safe: false, reason: 'Kołowrotek jest przeznaczony wyłącznie dla małych gryzoni (np. chomików) — królik może złamać w nim kręgosłup!' }
@@ -65,7 +64,6 @@
         name: 'Pies (Burek)',
         emoji: '🐕',
         habitat: 'Zwierzę domowe (towarzysz spacerów)',
-        hint: 'Na spacer i wyjazd z psem zabieramy smycz, miskę z wodą oraz woreczki na nieczystości.',
         items: [
           { id: 'smycz', name: 'Smycz i szelki', icon: '🦮', safe: true, info: 'Zapewniają bezpieczeństwo psu podczas spacerów w mieście i w lesie.' },
           { id: 'woda_pies', name: 'Bidon i miska z wodą', icon: '💧', safe: true, info: 'Pies szybko się przegrzewa — woda na spacerze to podstawa.' },
@@ -80,7 +78,6 @@
         name: 'Jeż europejski (ratowany)',
         emoji: '🦔',
         habitat: 'Dziki gość ogrodu (owadożerca)',
-        hint: 'Gdy pomagasz osłabionemu jeżowi przed wizytą u weterynarza, podaj mu wodę i karmę bogatą w białko.',
         items: [
           { id: 'woda_jez', name: 'Płytka miseczka z wodą', icon: '💧', safe: true, info: 'Jeże bardzo często cierpią z powodu odwodnienia — woda ratuje im życie.' },
           { id: 'karma_mokra', name: 'Mokra karma mięsna (dla kociąt)', icon: '🥫', safe: true, info: 'Wysokomięsna karma bez sosu i zbóż świetnie zastępuje owady w nagłej sytuacji.' },
@@ -95,7 +92,6 @@
         name: 'Żółw stepowy',
         emoji: '🐢',
         habitat: 'Zwierzę egzotyczne (roślinożerca)',
-        hint: 'Żółw stepowy potrzebuje polnych roślin (babka, mniszek), wapnia (sepii) oraz płytkiej miseczki z wodą.',
         items: [
           { id: 'mniszek', name: 'Liście mniszka i babki', icon: '🌱', safe: true, info: 'Dziko rosnące zielone rośliny to najzdrowszy pokarm dla żółwia lądowego.' },
           { id: 'sepia', name: 'Sepia (źródło wapnia)', icon: '🦴', safe: true, info: 'Wapń jest niezbędny, aby skorupa żółwia rosła twarda i zdrowa.' },
@@ -110,7 +106,6 @@
         name: 'Kura zielononóżka',
         emoji: '🐔',
         habitat: 'Zwierzę gospodarskie (wszystkożerca)',
-        hint: 'Kura znosi zdrowe jajka, gdy ma dostęp do ziarna zbóż, czystej wody oraz żwirku/piasku wspomagającego trawienie.',
         items: [
           { id: 'ziarno', name: 'Ziarno pszenicy i owsa', icon: '🌽', safe: true, info: 'Ziarna zbóż dostarczają kurze energii na cały dzień.' },
           { id: 'woda_kura', name: 'Poidło z czystą wodą', icon: '💧', safe: true, info: 'Bez stałego dostępu do czystej wody kura nie może prawidłowo funkcjonować.' },
@@ -277,12 +272,9 @@
                   <span className="inline-block px-3 py-1 rounded-full bg-amber-50 text-amber-800 text-xs font-bold mb-1">
                     {currentAnimal.habitat}
                   </span>
-                  <h2 className="text-2xl font-black text-slate-900 mb-2">
+                  <h2 className="text-2xl font-black text-slate-900">
                     {currentAnimal.name}
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-600 bg-amber-50/70 rounded-2xl p-3 border border-amber-100">
-                    💡 {currentAnimal.hint}
-                  </p>
                 </div>
 
                 {/* Backpack Drop Zone */}
@@ -306,7 +298,7 @@
                           Plecak Opiekuna
                         </h3>
                         <p className="text-xs text-slate-600 font-semibold">
-                          Przeciągnij tutaj lub kliknij bezpieczne rzeczy
+                          Zdecyduj sam, co zapakujesz
                         </p>
                       </div>
                     </div>

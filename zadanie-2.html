@@ -36,6 +36,27 @@
             .car-anim-2 {
                 animation: carDrive 4.2s linear infinite 1.4s;
             }
+            @keyframes walkAcross {
+                0% {
+                    left: 1%;
+                    opacity: 0;
+                }
+                6% {
+                    opacity: 1;
+                }
+                92% {
+                    opacity: 1;
+                }
+                100% {
+                    left: 90%;
+                    opacity: 0;
+                }
+            }
+            .animal-walk {
+                position: absolute;
+                opacity: 0;
+                animation: walkAcross 7s linear infinite;
+            }
         </style>
     </head>
     <body class="text-slate-800 antialiased">
@@ -91,35 +112,30 @@
                 {
                     id: 'zone-squirrels',
                     label: 'Korony wysokich drzew (Góra mapy)',
-                    hint: 'Tu mieszkają wiewiórki',
                     accepts: 'liny',
                     wrongHint: 'Wysoko w koronach drzew najlepiej sprawdzą się liny dla wiewiórek!',
                 },
                 {
                     id: 'zone-mammals',
                     label: 'Główny szlak leśny (Środek autostrady)',
-                    hint: 'Tu wędrują jelenie i wilki',
                     accepts: 'ekodukt',
                     wrongHint: 'Duże ssaki potrzebują szerokiego, zielonego mostu nad autostradą (ekoduktu)!',
                 },
                 {
                     id: 'zone-amphibians',
                     label: 'Strefa przy rzece i mokradłach (Dół mapy)',
-                    hint: 'Tu żaby idą nad rzekę',
                     accepts: 'tunel',
                     wrongHint: 'Blisko rzeki płazy potrzebują wilgotnego tunelu pod drogą!',
                 },
                 {
                     id: 'zone-acoustic',
                     label: 'Krawędź lasu przy jezdni',
-                    hint: 'Tu hałas aut płoszy ptaki',
                     accepts: 'ekrany',
                     wrongHint: 'Na granicy lasu i drogi warto ustawić ekrany akustyczne!',
                 },
                 {
                     id: 'zone-signs',
                     label: 'Wjazd na leśny odcinek drogi',
-                    hint: 'Miejsce widoczne dla kierowców',
                     accepts: 'znaki',
                     wrongHint: 'Przy wjeździe na trasę ustawiamy znaki ostrzegawcze dla kierowców!',
                 },
@@ -248,8 +264,8 @@
                                         <div className="mt-5 bg-emerald-600 text-white rounded-2xl p-4 text-center shadow-lg">
                                             <p className="font-black text-base mb-1">🎉 Korytarz Życia ukończony!</p>
                                             <p className="text-xs text-emerald-100 mb-3">Zwierzęta mogą teraz bezpiecznie wędrować między lasem a rzeką!</p>
-                                            <button onClick={() => setSimulating(true)} className="w-full py-2.5 px-4 rounded-xl bg-white text-emerald-900 font-black text-xs hover:bg-emerald-50 transition">
-                                                ▶️ Zobacz wędrówkę zwierząt!
+                                            <button onClick={() => setSimulating((prev) => !prev)} className="w-full py-2.5 px-4 rounded-xl bg-white text-emerald-900 font-black text-xs hover:bg-emerald-50 transition">
+                                                {simulating ? '⏸️ Zatrzymaj wędrówkę' : '▶️ Zobacz wędrówkę zwierząt!'}
                                             </button>
                                         </div>
                                     )}
@@ -314,7 +330,6 @@
                                                             ) : (
                                                                 <div>
                                                                     <p className="text-[11px] font-extrabold">{zone.label}</p>
-                                                                    <p className="text-[10px] text-slate-300">{zone.hint}</p>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -339,6 +354,18 @@
                                             </div>
                                             <div className="w-full bg-sky-500/80 text-white rounded-xl py-2 px-1 font-extrabold text-xs">🌊 RZEKA {simulating && '🐸'}</div>
                                         </div>
+
+                                        {/* Animals walking from forest to river while simulation runs */}
+                                        {simulating && (
+                                            <div className="absolute inset-0 z-20 pointer-events-none">
+                                                <span className="animal-walk text-2xl" style={{ top: '18%' }}>🦌</span>
+                                                <span className="animal-walk text-2xl" style={{ top: '34%', animationDelay: '1.4s' }}>🐺</span>
+                                                <span className="animal-walk text-2xl" style={{ top: '52%', animationDelay: '2.8s' }}>🐗</span>
+                                                <span className="animal-walk text-xl" style={{ top: '68%', animationDelay: '4.2s' }}>🦊</span>
+                                                <span className="animal-walk text-xl" style={{ top: '80%', animationDelay: '5.6s' }}>🐿️</span>
+                                                <span className="animal-walk text-xl" style={{ top: '88%', animationDelay: '3.5s' }}>🐸</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
