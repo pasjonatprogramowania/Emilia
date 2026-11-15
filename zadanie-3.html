@@ -97,7 +97,8 @@
             const ECOSYSTEM_ELEMENTS = [
               {
                 id: 'tree',
-                markerId: 0,
+                markerId: 0,
+                model: 'assets/models/habitat-tree.glb',
                 name: 'Stare spróchniałe drzewo',
                 shortName: 'Spróchniałe drzewo',
                 icon: '🪵',
@@ -116,7 +117,8 @@
               },
               {
                 id: 'nestbox',
-                markerId: 1,
+                markerId: 1,
+                model: 'assets/models/habitat-nestbox.glb',
                 name: 'Budka lęgowa',
                 shortName: 'Budka lęgowa',
                 icon: '🏠',
@@ -134,7 +136,8 @@
               },
               {
                 id: 'puddle',
-                markerId: 2,
+                markerId: 2,
+                model: 'assets/models/habitat-puddle.glb',
                 name: 'Kałuża z błotem',
                 shortName: 'Kałuża z błotem',
                 icon: '💧',
@@ -152,7 +155,8 @@
               },
               {
                 id: 'meadow',
-                markerId: 3,
+                markerId: 3,
+                model: 'assets/models/habitat-meadow.glb',
                 name: 'Dzika łąka kwietna',
                 shortName: 'Łąka kwietna',
                 icon: '🌼',
@@ -170,7 +174,8 @@
               },
               {
                 id: 'lawn',
-                markerId: 4,
+                markerId: 4,
+                model: 'assets/models/habitat-lawn.glb',
                 name: 'Idealnie przystrzyżony trawnik',
                 shortName: 'Wykoszony trawnik',
                 icon: '⛳',
@@ -188,7 +193,8 @@
               },
               {
                 id: 'lamp',
-                markerId: 5,
+                markerId: 5,
+                model: 'assets/models/habitat-lamp.glb',
                 name: 'Lampa ogrodowa świecąca całą noc',
                 shortName: 'Lampa nocna',
                 icon: '💡',
@@ -215,19 +221,19 @@
             ];
 
             const HABITAT_ANIMALS = [
-              { id: 'puszczyk', name: 'Puszczyk (sowa)', icon: '🦉', markerId: 10, model: null, habitats: ['tree', 'nestbox'], fact: 'W dzień ukrywa się w dziupli lub budce, nocą poluje na gryzonie.', hint: 'Szuka ciemnej kryjówki wysoko nad ziemią.', grid: [[1,0,0,0],[1,1,0,1],[1,1,0,0],[1,1,0,1]] },
-              { id: 'dzieciol', name: 'Dzięcioł', icon: '🐦', markerId: 11, model: 'assets/models/dzieciol.glb', habitats: ['tree'], fact: 'Kuje dziuple w pniach — potem korzystają z nich inne zwierzęta.', hint: 'To ptak, który pracuje na pniu, nie na łące.', grid: [[1,1,1,0],[0,1,0,1],[1,0,0,1],[0,0,0,1]] },
-              { id: 'nietoperz', name: 'Nietoperz', icon: '🦇', markerId: 12, model: 'assets/models/nietoperz.glb', habitats: ['tree'], fact: 'Na dzień wisi w dziupli lub szczelinie kory.', hint: 'Potrzebuje ciemnej szczeliny, nie otwartej przestrzeni.', grid: [[1,0,0,0],[0,0,1,0],[1,1,1,0],[1,0,1,0]] },
-              { id: 'jelonek', name: 'Jelonek rogacz (chrząszcz)', icon: '🪲', markerId: 13, model: null, habitats: ['tree'], fact: 'Jego larwy rozwijają się w próchnie martwego drzewa.', hint: 'Jego domem jest martwe drewno.', grid: [[1,0,0,0],[0,0,0,1],[1,1,1,0],[1,1,0,1]] },
-              { id: 'sikorka', name: 'Sikorka', icon: '🐤', markerId: 14, model: 'assets/models/sikorka.glb', habitats: ['nestbox'], fact: 'Chętnie zakłada gniazdo w budce lęgowej i zjada tysiące gąsienic.', hint: 'Potrzebuje gotowego, bezpiecznego lokum dla piskląt.', grid: [[1,1,0,0],[1,0,1,0],[1,0,0,0],[0,0,1,1]] },
-              { id: 'szpak', name: 'Szpak', icon: '🐦‍⬛', markerId: 15, model: null, habitats: ['nestbox'], fact: 'Zamieszkuje budki i dziuple, często blisko ludzi.', hint: 'Też korzysta z gotowej budki.', grid: [[0,1,1,1],[1,1,0,0],[0,1,1,1],[0,1,0,0]] },
-              { id: 'jaskolka', name: 'Jaskółka', icon: '🕊️', markerId: 16, model: null, habitats: ['puddle'], fact: 'Lepi gniazdo z błota wygrzebanego z kałuży.', hint: 'Potrzebuje błota jako budulca.', grid: [[1,1,1,0],[1,0,0,1],[0,1,0,0],[1,1,0,0]] },
-              { id: 'zaba', name: 'Żaba', icon: '🐸', markerId: 17, model: 'assets/models/zaba.glb', habitats: ['puddle', 'meadow'], fact: 'Składa skrzek w wodzie, a poluje w wilgotnej trawie.', hint: 'Woda i wilgotna trawa — nie pień drzewa.', grid: [[0,1,1,0],[0,0,1,1],[0,0,1,1],[0,0,1,0]] },
-              { id: 'wazka', name: 'Ważka', icon: '🪰', markerId: 18, model: 'assets/models/wazka.glb', habitats: ['puddle'], fact: 'Jej larwy żyją w wodzie, dorosłe polują nad kałużą.', hint: 'Całe życie związane z wodą.', grid: [[1,1,0,1],[1,0,1,0],[0,1,1,1],[1,0,0,0]] },
-              { id: 'motyle', name: 'Motyle', icon: '🦋', markerId: 19, model: 'assets/models/motyle.glb', habitats: ['meadow', 'puddle'], fact: 'Nektar zbierają na łące, a minerały piją z błota.', hint: 'Kwiaty i wilgotne podłoże.', grid: [[0,1,0,0],[0,0,1,1],[1,0,1,1],[0,1,1,0]] },
-              { id: 'pszczoly', name: 'Pszczoły', icon: '🐝', markerId: 20, model: null, habitats: ['meadow'], fact: 'Zbierają nektar i pyłek z kwiatów łąki.', hint: 'Szukają kwiatów, nie dziupli.', grid: [[0,1,0,1],[0,1,1,1],[1,1,1,0],[0,0,1,0]] },
-              { id: 'trzmiele', name: 'Trzmiele', icon: '🐝', markerId: 21, model: null, habitats: ['meadow'], fact: 'Zapylają kwiaty nawet w chłodne dni.', hint: 'Też potrzebują kwitnącej łąki.', grid: [[1,1,0,0],[1,0,1,1],[1,0,0,0],[1,0,1,1]] },
-              { id: 'jez', name: 'Jeż', icon: '🦔', markerId: 22, model: null, habitats: ['meadow'], fact: 'Poluje w wysokiej trawie na owady i ślimaki.', hint: 'Szuka gęstej trawy i kryjówki na ziemi.', grid: [[1,1,0,0],[0,1,1,0],[0,0,0,1],[0,0,1,1]] }
+              { id: 'puszczyk', name: 'Puszczyk (sowa)', icon: '🦉', photo: 'https://upload.wikimedia.org/wikipedia/commons/5/55/Strix_aluco_3_%28Martin_Mecnarowski%29.jpg', markerId: 10, model: null, habitats: ['tree', 'nestbox'], fact: 'W dzień ukrywa się w dziupli lub budce, nocą poluje na gryzonie.', hint: 'Szuka ciemnej kryjówki wysoko nad ziemią.', grid: [[1,0,0,0],[1,1,0,1],[1,1,0,0],[1,1,0,1]] },
+              { id: 'dzieciol', name: 'Dzięcioł', icon: '🐦', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Great_spotted_woodpecker_%28Dendrocopos_major%29_male_Drenthe.jpg/960px-Great_spotted_woodpecker_%28Dendrocopos_major%29_male_Drenthe.jpg', markerId: 11, model: 'assets/models/dzieciol.glb', habitats: ['tree'], fact: 'Kuje dziuple w pniach — potem korzystają z nich inne zwierzęta.', hint: 'To ptak, który pracuje na pniu, nie na łące.', grid: [[1,1,1,0],[0,1,0,1],[1,0,0,1],[0,0,0,1]] },
+              { id: 'nietoperz', name: 'Nietoperz', icon: '🦇', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Plecotus_auritus_2013-2_%28cropped%29.jpg/960px-Plecotus_auritus_2013-2_%28cropped%29.jpg', markerId: 12, model: 'assets/models/nietoperz.glb', habitats: ['tree'], fact: 'Na dzień wisi w dziupli lub szczelinie kory.', hint: 'Potrzebuje ciemnej szczeliny, nie otwartej przestrzeni.', grid: [[1,0,0,0],[0,0,1,0],[1,1,1,0],[1,0,1,0]] },
+              { id: 'jelonek', name: 'Jelonek rogacz (chrząszcz)', icon: '🪲', photo: 'https://upload.wikimedia.org/wikipedia/commons/0/09/Lucanus_cervus.jpg', markerId: 13, model: null, habitats: ['tree'], fact: 'Jego larwy rozwijają się w próchnie martwego drzewa.', hint: 'Jego domem jest martwe drewno.', grid: [[1,0,0,0],[0,0,0,1],[1,1,1,0],[1,1,0,1]] },
+              { id: 'sikorka', name: 'Sikorka', icon: '🐤', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Eurasian_blue_tit_Lancashire.jpg/960px-Eurasian_blue_tit_Lancashire.jpg', markerId: 14, model: 'assets/models/sikorka.glb', habitats: ['nestbox'], fact: 'Chętnie zakłada gniazdo w budce lęgowej i zjada tysiące gąsienic.', hint: 'Potrzebuje gotowego, bezpiecznego lokum dla piskląt.', grid: [[1,1,0,0],[1,0,1,0],[1,0,0,0],[0,0,1,1]] },
+              { id: 'szpak', name: 'Szpak', icon: '🐦‍⬛', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Common_starling_%28Sturnus_vulgaris%29_breeding_male_Marken.jpg/960px-Common_starling_%28Sturnus_vulgaris%29_breeding_male_Marken.jpg', markerId: 15, model: null, habitats: ['nestbox'], fact: 'Zamieszkuje budki i dziuple, często blisko ludzi.', hint: 'Też korzysta z gotowej budki.', grid: [[0,1,1,1],[1,1,0,0],[0,1,1,1],[0,1,0,0]] },
+              { id: 'jaskolka', name: 'Jaskółka', icon: '🕊️', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Rauchschwalbe_Hirundo_rustica.jpg/960px-Rauchschwalbe_Hirundo_rustica.jpg', markerId: 16, model: null, habitats: ['puddle'], fact: 'Lepi gniazdo z błota wygrzebanego z kałuży.', hint: 'Potrzebuje błota jako budulca.', grid: [[1,1,1,0],[1,0,0,1],[0,1,0,0],[1,1,0,0]] },
+              { id: 'zaba', name: 'Żaba', icon: '🐸', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/European_Common_Frog_Rana_temporaria.jpg/960px-European_Common_Frog_Rana_temporaria.jpg', markerId: 17, model: 'assets/models/zaba.glb', habitats: ['puddle', 'meadow'], fact: 'Składa skrzek w wodzie, a poluje w wilgotnej trawie.', hint: 'Woda i wilgotna trawa — nie pień drzewa.', grid: [[0,1,1,0],[0,0,1,1],[0,0,1,1],[0,0,1,0]] },
+              { id: 'wazka', name: 'Ważka', icon: '🪰', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Red_grasshawk_%28Neurothemis_fluctuans%29_male_Phuket_2.jpg/960px-Red_grasshawk_%28Neurothemis_fluctuans%29_male_Phuket_2.jpg', markerId: 18, model: 'assets/models/wazka.glb', habitats: ['puddle'], fact: 'Jej larwy żyją w wodzie, dorosłe polują nad kałużą.', hint: 'Całe życie związane z wodą.', grid: [[1,1,0,1],[1,0,1,0],[0,1,1,1],[1,0,0,0]] },
+              { id: 'motyle', name: 'Motyle', icon: '🦋', photo: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Fesoj_-_Papilio_machaon_%28by%29.jpg', markerId: 19, model: 'assets/models/motyle.glb', habitats: ['meadow', 'puddle'], fact: 'Nektar zbierają na łące, a minerały piją z błota.', hint: 'Kwiaty i wilgotne podłoże.', grid: [[0,1,0,0],[0,0,1,1],[1,0,1,1],[0,1,1,0]] },
+              { id: 'pszczoly', name: 'Pszczoły', icon: '🐝', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Apis_mellifera_Western_honey_bee.jpg/960px-Apis_mellifera_Western_honey_bee.jpg', markerId: 20, model: null, habitats: ['meadow'], fact: 'Zbierają nektar i pyłek z kwiatów łąki.', hint: 'Szukają kwiatów, nie dziupli.', grid: [[0,1,0,1],[0,1,1,1],[1,1,1,0],[0,0,1,0]] },
+              { id: 'trzmiele', name: 'Trzmiele', icon: '🐝', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Bombus_lapidarius_-_Melilotus_officinalis_-_Tallinn.jpg/960px-Bombus_lapidarius_-_Melilotus_officinalis_-_Tallinn.jpg', markerId: 21, model: null, habitats: ['meadow'], fact: 'Zapylają kwiaty nawet w chłodne dni.', hint: 'Też potrzebują kwitnącej łąki.', grid: [[1,1,0,0],[1,0,1,1],[1,0,0,0],[1,0,1,1]] },
+              { id: 'jez', name: 'Jeż', icon: '🦔', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Erinaceus_europaeus_LC0119.jpg/960px-Erinaceus_europaeus_LC0119.jpg', markerId: 22, model: null, habitats: ['meadow'], fact: 'Poluje w wysokiej trawie na owady i ślimaki.', hint: 'Szuka gęstej trawy i kryjówki na ziemi.', grid: [[1,1,0,0],[0,1,1,0],[0,0,0,1],[0,0,1,1]] }
             ];
 
             // Generate deterministic AR.js .patt Blob URL from 4x4 grid so markery.html matches 100%
@@ -614,7 +620,7 @@
                   const next = { ...matches, [animal.id]: targetId };
                   setMatches(next);
                   setMatchSelected(null);
-                  setMatchMsg({ ok: true, text: `${animal.icon} ${animal.name}: ${animal.fact}` });
+                  setMatchMsg({ ok: true, text: `${animal.name}: ${animal.fact}` });
                   if (Object.keys(next).length === HABITAT_ANIMALS.length) {
                     try {
                       const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
@@ -623,7 +629,7 @@
                     } catch (e) {}
                   }
                 } else {
-                  setMatchMsg({ ok: false, text: `${animal.icon} ${animal.name} nie mieszka tutaj. ${animal.hint}` });
+                  setMatchMsg({ ok: false, text: `${animal.name} nie mieszka tutaj. ${animal.hint}` });
                 }
               };
 
@@ -802,7 +808,10 @@
                                   smoothTolerance="0.02"
                                   smoothThreshold="4"
                                 >
-                                  {/* 3D Representation floating above marker */}
+                                  {/* 3D model loads when the marker is visible; primitives as fallback */}
+                                  {el.model && detectedMarkers.some((m) => m.id === el.id) ? (
+                                    <a-entity gltf-model={el.model} position="0 0.1 0" scale="0.45 0.45 0.45"></a-entity>
+                                  ) : (
                                   <a-entity position="0 0.5 0">
                                     {el.id === 'tree' && (
                                       <a-entity>
@@ -839,6 +848,7 @@
                                       </a-entity>
                                     )}
                                   </a-entity>
+                                  )}
                                 </a-marker>
                               )
                             ))}
@@ -1156,7 +1166,12 @@
                                     : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-emerald-300'
                               }`}
                             >
-                              <span className="text-base">{animal.icon}</span>
+                              <img
+                                src={animal.photo}
+                                alt=""
+                                loading="lazy"
+                                className="w-6 h-6 rounded-full object-cover border border-white/50 shrink-0"
+                              />
                               <span>{animal.name}</span>
                               {done && <span>✅</span>}
                             </button>
@@ -1180,7 +1195,7 @@
                               <p className="text-[11px] font-black text-slate-800 mt-1">{target.label}</p>
                               <div className="flex flex-wrap justify-center gap-1 mt-1.5 min-h-[22px]">
                                 {assigned.map((a) => (
-                                  <span key={a.id} className="text-base">{a.icon}</span>
+                                  <img key={a.id} src={a.photo} alt={a.name} title={a.name} loading="lazy" className="w-7 h-7 rounded-full object-cover border border-emerald-300" />
                                 ))}
                               </div>
                             </div>
