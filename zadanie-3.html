@@ -12,7 +12,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <!-- A-Frame & AR.js (CDN) -->
         <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-        <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.5/aframe/build/aframe-ar.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
         <!-- React 18 & Babel Standalone -->
         <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
         <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -295,6 +295,7 @@
               const [cameraStatus, setCameraStatus] = useState('idle'); // 'idle' | 'checking' | 'ready' | 'error'
               const [cameraErrorMsg, setCameraErrorMsg] = useState('');
               const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
+              const [arDiag, setArDiag] = useState(null);
               const [detectedMarkers, setDetectedMarkers] = useState([]);
               const [adjacentPairs, setAdjacentPairs] = useState([]);
               const [patternUrls, setPatternUrls] = useState({});
@@ -329,8 +330,10 @@
                   const stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
                   });
-                  // Release probe stream immediately so AR.js can acquire the camera cleanly
+                  // Release probe stream so AR.js can acquire the camera cleanly
                   stream.getTracks().forEach(track => track.stop());
+                  // Give Android/iOS a moment to free the camera before AR.js opens it again
+                  await new Promise((resolve) => setTimeout(resolve, 700));
                   setCameraStatus('ready');
                   setMode('webar');
                 } catch (err) {
@@ -419,6 +422,43 @@
                 document.body.style.overflow = locked ? 'hidden' : '';
                 return () => {
                   document.body.style.overflow = '';
+                };
+              }, [mode, cameraStatus]);
+
+              // Make sure A-Frame fills the fullscreen viewport and actually receives camera frames
+              useEffect(() => {
+                if (mode !== 'webar' || cameraStatus !== 'ready') return;
+
+                let cancelled = false;
+                const resizeScene = () => {
+                  const scene = sceneContainerRef.current && sceneContainerRef.current.querySelector('a-scene');
+                  if (scene && typeof scene.resize === 'function') {
+                    try { scene.resize(); } catch (e) {}
+                  }
+                };
+
+                const timerResize = setTimeout(resizeScene, 400);
+                const timerResize2 = setTimeout(resizeScene, 1500);
+
+                const checkVideo = () => {
+                  if (cancelled) return;
+                  const container = sceneContainerRef.current;
+                  const video = container && container.querySelector('video');
+                  const hasFrames = video && video.videoWidth > 0 && video.readyState >= 2;
+                  setArDiag(hasFrames ? null : 'Kamera nie przekazuje obrazu. Sprawdź uprawnienie „Kamera” dla tej strony (ikona kłódki przy adresie) i wciśnij „Spróbuj ponownie”.');
+                };
+                const timerCheck = setTimeout(checkVideo, 6000);
+
+                return () => {
+                  cancelled = true;
+                  clearTimeout(timerResize);
+                  clearTimeout(timerResize2);
+                  clearTimeout(timerCheck);
+                  // Release the camera when leaving the AR view
+                  const leftVideo = sceneContainerRef.current && sceneContainerRef.current.querySelector('video');
+                  if (leftVideo && leftVideo.srcObject && leftVideo.srcObject.getTracks) {
+                    leftVideo.srcObject.getTracks().forEach((track) => track.stop());
+                  }
                 };
               }, [mode, cameraStatus]);
 
@@ -612,13 +652,23 @@
                           </div>
                         </div>
 
+                        {arDiag && (
+                          <div className="bg-amber-400 text-amber-950 px-3 py-2 text-[11px] sm:text-xs font-bold flex items-center justify-between gap-2">
+                            <span>{arDiag}</span>
+                            <button onClick={startWebAR} className="px-3 py-1.5 rounded-lg bg-amber-950 text-amber-50 font-extrabold shrink-0">
+                              Spróbuj ponownie
+                            </button>
+                          </div>
+                        )}
+
                         {/* A-Frame AR.js Viewport */}
                         <div ref={sceneContainerRef} className="ar-viewport relative w-full flex-1 min-h-0 bg-black">
                           <a-scene
                             embedded
                             vr-mode-ui="enabled: false"
-                            renderer="logarithmicDepthBuffer: true; antialias: true;"
-                            arjs="sourceType: webcam; debugUIEnabled: false;"
+                            loading-screen="enabled: false"
+                            renderer="antialias: true; alpha: true;"
+                            arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; maxDetectionRate: 60;"
                           >
                             {ECOSYSTEM_ELEMENTS.map((el) => (
                               patternUrls[el.id] && (
