@@ -69,7 +69,7 @@
                     name: 'Sarna',
                     icon: '🦌',
                     layer: 'Zarośla i skraj lasu',
-                    clue: 'Rude futro, duże uszy i biała plama wokół ogona na skraju lasu.',
+                    clue: 'Rude futro, duże uszy i parostki na głowie.',
                     xPct: 0.48,
                     yPct: 0.56,
                     colorPrimary: '#b45309',
@@ -185,7 +185,7 @@
                             const ay = h * animal.yPct;
 
                             if (animal.id === 'sarna') {
-                                // Roe deer: red-brown head, big ears, white muzzle
+                                // Roe deer: red-brown head, big ears, white muzzle, antlers (parostki)
                                 ctx.fillStyle = '#b45309';
                                 ctx.beginPath();
                                 ctx.ellipse(ax, ay, 26, 21, 0, 0, Math.PI * 2);
@@ -203,6 +203,25 @@
                                 ctx.arc(ax - 9, ay - 3, 3.5, 0, Math.PI * 2);
                                 ctx.arc(ax + 9, ay - 3, 3.5, 0, Math.PI * 2);
                                 ctx.fill();
+
+                                // Antlers: two thin, forked beams growing from the forehead
+                                ctx.strokeStyle = '#78350f';
+                                ctx.lineWidth = 3;
+                                ctx.lineCap = 'round';
+                                ctx.beginPath();
+                                ctx.moveTo(ax - 7, ay - 17);
+                                ctx.lineTo(ax - 13, ay - 40);
+                                ctx.moveTo(ax - 12, ay - 34);
+                                ctx.lineTo(ax - 22, ay - 36);
+                                ctx.moveTo(ax - 13, ay - 27);
+                                ctx.lineTo(ax - 21, ay - 24);
+                                ctx.moveTo(ax + 7, ay - 17);
+                                ctx.lineTo(ax + 13, ay - 40);
+                                ctx.moveTo(ax + 12, ay - 34);
+                                ctx.lineTo(ax + 22, ay - 36);
+                                ctx.moveTo(ax + 13, ay - 27);
+                                ctx.lineTo(ax + 21, ay - 24);
+                                ctx.stroke();
                             } else if (animal.id === 'bobr') {
                                 // Beaver flat scaly tail
                                 ctx.fillStyle = '#78350f';
