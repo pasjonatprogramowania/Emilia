@@ -219,26 +219,23 @@
                     <div className="min-h-screen flex flex-col">
                         {/* Header */}
                         <header className="no-print bg-white border-b border-emerald-200 sticky top-0 z-30">
-                            <div className="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
-                                <div className="flex items-center gap-2">
-                                    <a href="index.html" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm transition">
-                                        <span>←</span>
-                                        <span>Menu główne</span>
-                                    </a>
-                                    <a href="zadanie-3.html" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold text-xs sm:text-sm transition">
-                                        <span>📷</span>
-                                        <span>Wróć do Zadania 3 (WebAR)</span>
-                                    </a>
-                                </div>
-
-                                <button onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow transition">
+                            <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
+                                <a href="index.html" aria-label="Menu główne" className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-base shrink-0 transition">
+                                    ←
+                                </a>
+                                <span className="flex-1 text-xs sm:text-sm font-extrabold text-slate-700 truncate">Karty markerów AR</span>
+                                <a href="zadanie-3.html" aria-label="Wróć do Zadania 3 (WebAR)" className="inline-flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3.5 sm:py-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold text-xs sm:text-sm shrink-0 transition">
+                                    <span>📷</span>
+                                    <span className="hidden sm:inline">Zadanie 3</span>
+                                </a>
+                                <button onClick={() => window.print()} aria-label="Drukuj karty markerów (A4)" className="inline-flex items-center justify-center gap-2 w-10 h-10 sm:w-auto sm:h-auto sm:px-4 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow shrink-0 transition">
                                     <span>🖨️</span>
-                                    <span>Drukuj karty markerów (A4)</span>
+                                    <span className="hidden sm:inline">Drukuj (A4)</span>
                                 </button>
                             </div>
                         </header>
 
-                        <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8">
+                        <main className="flex-1 max-w-6xl w-full mx-auto px-3 py-4 sm:px-4 sm:py-8">
                             {/* Instructions */}
                             <section className="bg-white rounded-3xl p-6 border-2 border-emerald-200 shadow-sm mb-8">
                                 <span className="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold mb-2">Karta Pomocy WebAR • Zadanie 3</span>

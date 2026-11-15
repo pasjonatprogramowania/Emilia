@@ -28,13 +28,26 @@
             .font-display {
                 font-family: 'Nunito', sans-serif;
             }
-            /* Ensure A-Frame canvas stays properly bounded inside WebAR container */
-            .ar-viewport a-scene {
+            html,
+            body {
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+            /* AR.js / A-Frame must fill its container instead of forcing its own pixel size */
+            .ar-viewport {
+                position: relative;
+                overflow: hidden;
+            }
+            .ar-viewport a-scene,
+            .ar-viewport canvas,
+            .ar-viewport video {
                 width: 100% !important;
                 height: 100% !important;
+                max-width: 100% !important;
                 position: relative !important;
             }
-            .ar-viewport video {
+            .ar-viewport video,
+            .ar-viewport canvas {
                 object-fit: cover !important;
             }
         </style>
@@ -281,6 +294,7 @@
               const [report, setReport] = useState(null);
               const [cameraStatus, setCameraStatus] = useState('idle'); // 'idle' | 'checking' | 'ready' | 'error'
               const [cameraErrorMsg, setCameraErrorMsg] = useState('');
+              const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
               const [detectedMarkers, setDetectedMarkers] = useState([]);
               const [adjacentPairs, setAdjacentPairs] = useState([]);
               const [patternUrls, setPatternUrls] = useState({});
@@ -301,6 +315,7 @@
 
               // Check camera availability safely before starting WebAR mode
               const startWebAR = async () => {
+                setShowPermissionPrompt(false);
                 setCameraStatus('checking');
                 setCameraErrorMsg('');
 
@@ -312,7 +327,7 @@
 
                 try {
                   const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' }
+                    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
                   });
                   // Release probe stream immediately so AR.js can acquire the camera cleanly
                   stream.getTracks().forEach(track => track.stop());
@@ -320,8 +335,11 @@
                   setMode('webar');
                 } catch (err) {
                   setCameraStatus('error');
+                  const denied = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
                   setCameraErrorMsg(
-                    'Brak dostępu do kamery lub brak podłączonej kamery w urządzeniu. Możesz przetestować pełną mechanikę ekosystemu w Trybie Symulacji!'
+                    denied
+                      ? 'Kamera jest zablokowana. Kliknij ikonę kłódki przy adresie strony, włącz uprawnienie „Kamera” i odśwież stronę. Do tego czasu działa Tryb Symulacji.'
+                      : 'Nie udało się włączyć kamery (brak dostępu lub kamera zajęta przez inną aplikację). Możesz przetestować pełną mechanikę ekosystemu w Trybie Symulacji!'
                   );
                 }
               };
@@ -395,9 +413,17 @@
                 return () => clearInterval(interval);
               }, [mode, cameraStatus]);
 
+              // Lock page scrolling while the fullscreen AR view is open
+              useEffect(() => {
+                const locked = mode === 'webar' && cameraStatus === 'ready';
+                document.body.style.overflow = locked ? 'hidden' : '';
+                return () => {
+                  document.body.style.overflow = '';
+                };
+              }, [mode, cameraStatus]);
+
               // Simulator slot handlers
-              const handlePlaceInSlot = (slotIdx, elementId) => {
-                const next = [...slots];
+              const handlePlaceInSlot = (slotIdx, elementId) => {                const next = [...slots];
                 // Prevent duplicate in another slot
                 const existingIdx = next.indexOf(elementId);
                 if (existingIdx !== -1 && existingIdx !== slotIdx) {
@@ -444,35 +470,36 @@
                 <div className="min-h-screen flex flex-col">
                   {/* Top Navigation */}
                   <header className="bg-white border-b border-emerald-200 sticky top-0 z-40">
-                    <div className="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+                    <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
                       <a
                         href="index.html"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition"
+                        aria-label="Powrót do menu"
+                        className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-base shrink-0 transition"
                       >
-                        <span>←</span>
-                        <span>Powrót do menu</span>
+                        ←
                       </a>
 
-                      <div className="flex items-center gap-2">
-                        <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-extrabold uppercase tracking-wide text-emerald-700 leading-none mb-1">
                           Zadanie 3 • Karta #3 • WebAR
-                        </span>
-                        <h1 className="text-base sm:text-lg font-black text-slate-900">
+                        </p>
+                        <h1 className="text-sm sm:text-lg font-black text-slate-900 truncate leading-tight">
                           „Zbuduj Idealny Ekosystem”
                         </h1>
                       </div>
 
                       <a
                         href="markery.html"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-sm transition"
+                        aria-label="Generator Markerów AR"
+                        className="inline-flex items-center justify-center gap-2 w-10 h-10 sm:w-auto sm:h-auto sm:px-4 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-sm shrink-0 transition"
                       >
                         <span>🖨️</span>
-                        <span>Generator Markerów AR</span>
+                        <span className="hidden sm:inline">Generator Markerów AR</span>
                       </a>
                     </div>
                   </header>
 
-                  <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+                  <main className="flex-1 max-w-6xl w-full mx-auto px-3 py-4 sm:px-4 sm:py-6">
                     {/* Mode Switcher Bar */}
                     <div className="bg-white rounded-3xl p-4 border-2 border-emerald-200 shadow-sm mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                       <div>
@@ -496,7 +523,7 @@
                           🧩 Tryb Symulacji (Bez kamery)
                         </button>
                         <button
-                          onClick={startWebAR}
+                          onClick={() => (cameraStatus === 'ready' ? setMode('webar') : setShowPermissionPrompt(true))}
                           disabled={cameraStatus === 'checking'}
                           className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm transition ${
                             mode === 'webar'
@@ -508,6 +535,38 @@
                         </button>
                       </div>
                     </div>
+
+                    {/* Explicit camera permission request */}
+                    {showPermissionPrompt && (
+                      <div className="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="w-full max-w-md bg-white rounded-3xl p-6 border-2 border-emerald-300 shadow-2xl">
+                          <div className="text-4xl mb-3 text-center">📷</div>
+                          <h2 className="text-lg font-black text-slate-900 text-center mb-2">Zezwól na dostęp do kamery</h2>
+                          <p className="text-sm text-slate-600 leading-relaxed mb-4">
+                            Tryb WebAR potrzebuje kamery, aby rozpoznać markery z karty. Obraz z kamery zostaje na Twoim telefonie — nic nie jest wysyłane ani zapisywane.
+                          </p>
+                          <ol className="text-xs text-slate-600 space-y-1.5 mb-5 list-decimal list-inside">
+                            <li>Kliknij „Zezwól na kamerę”.</li>
+                            <li>W pytaniu przeglądarki wybierz <strong>Zezwól</strong>.</li>
+                            <li>Skieruj kamerę na wydrukowane markery.</li>
+                          </ol>
+                          <div className="flex flex-col gap-2.5">
+                            <button
+                              onClick={startWebAR}
+                              className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm transition"
+                            >
+                              Zezwól na kamerę
+                            </button>
+                            <button
+                              onClick={() => setShowPermissionPrompt(false)}
+                              className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition"
+                            >
+                              Nie teraz — użyj symulacji
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Graceful Camera Error Alert */}
                     {cameraStatus === 'error' && (
@@ -532,7 +591,7 @@
 
                     {/* WEBAR CAMERA VIEW (AR.js + A-Frame) */}
                     {mode === 'webar' && cameraStatus === 'ready' && (
-                      <section className="mb-8 bg-slate-900 rounded-3xl overflow-hidden border-4 border-emerald-500 shadow-2xl">
+                      <section className="fixed inset-0 z-50 flex flex-col bg-slate-900">
                         <div className="bg-emerald-950 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
@@ -554,7 +613,7 @@
                         </div>
 
                         {/* A-Frame AR.js Viewport */}
-                        <div ref={sceneContainerRef} className="ar-viewport relative w-full h-[420px] sm:h-[480px] bg-black">
+                        <div ref={sceneContainerRef} className="ar-viewport relative w-full flex-1 min-h-0 bg-black">
                           <a-scene
                             embedded
                             vr-mode-ui="enabled: false"
@@ -665,7 +724,7 @@
                           Przeciągnij do 3 slotów po prawej stronie lub kliknij element, aby umieścić go na swojej działce przyrodniczej.
                         </p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5">
+                        <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
                           {ECOSYSTEM_ELEMENTS.map((el) => {
                             const isSelected = slots.includes(el.id);
 
@@ -675,24 +734,24 @@
                                 draggable
                                 onDragStart={(e) => e.dataTransfer.setData('text/plain', el.id)}
                                 onClick={() => handleQuickAdd(el.id)}
-                                className={`p-3.5 rounded-2xl border-2 transition cursor-pointer select-none flex items-center justify-between gap-3 ${
+                                className={`p-2.5 sm:p-3.5 rounded-2xl border-2 transition cursor-pointer select-none flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 ${
                                   isSelected
                                     ? 'bg-emerald-600 text-white border-emerald-700 shadow-md'
                                     : 'bg-emerald-50/40 hover:bg-emerald-50 border-emerald-200 hover:border-emerald-400'
                                 }`}
                               >
-                                <div className="flex items-center gap-3">
-                                  <span className="text-3xl">{el.icon}</span>
-                                  <div>
-                                    <p className="text-xs sm:text-sm font-black leading-snug">
+                                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                  <span className="text-2xl sm:text-3xl shrink-0">{el.icon}</span>
+                                  <div className="min-w-0">
+                                    <p className="text-[11px] sm:text-sm font-black leading-tight">
                                       {el.name}
                                     </p>
-                                    <p className={`text-[11px] font-semibold ${isSelected ? 'text-emerald-100' : 'text-slate-500'}`}>
+                                    <p className={`text-[10px] sm:text-[11px] font-semibold ${isSelected ? 'text-emerald-100' : 'text-slate-500'}`}>
                                       Marker AR #{el.markerId}
                                     </p>
                                   </div>
                                 </div>
-                                <span className={`text-xs font-extrabold px-2.5 py-1 rounded-full ${
+                                <span className={`self-start sm:self-auto text-[10px] sm:text-xs font-extrabold px-2 py-1 rounded-full ${
                                   isSelected ? 'bg-white text-emerald-800' : 'bg-white text-slate-600 border border-slate-200'
                                 }`}>
                                   {isSelected ? 'W slocie' : '+ Dodaj'}
