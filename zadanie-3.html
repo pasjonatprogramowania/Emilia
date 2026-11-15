@@ -203,19 +203,19 @@
             ];
 
             const HABITAT_ANIMALS = [
-              { id: 'puszczyk', name: 'Puszczyk (sowa)', icon: '🦉', habitats: ['tree', 'nestbox'], fact: 'W dzień ukrywa się w dziupli lub budce, nocą poluje na gryzonie.', hint: 'Szuka ciemnej kryjówki wysoko nad ziemią.' },
-              { id: 'dzieciol', name: 'Dzięcioł', icon: '🐦', habitats: ['tree'], fact: 'Kuje dziuple w pniach — potem korzystają z nich inne zwierzęta.', hint: 'To ptak, który pracuje na pniu, nie na łące.' },
-              { id: 'nietoperz', name: 'Nietoperz', icon: '🦇', habitats: ['tree'], fact: 'Na dzień wisi w dziupli lub szczelinie kory.', hint: 'Potrzebuje ciemnej szczeliny, nie otwartej przestrzeni.' },
-              { id: 'jelonek', name: 'Jelonek rogacz (chrząszcz)', icon: '🪲', habitats: ['tree'], fact: 'Jego larwy rozwijają się w próchnie martwego drzewa.', hint: 'Jego domem jest martwe drewno.' },
-              { id: 'sikorka', name: 'Sikorka', icon: '🐤', habitats: ['nestbox'], fact: 'Chętnie zakłada gniazdo w budce lęgowej i zjada tysiące gąsienic.', hint: 'Potrzebuje gotowego, bezpiecznego lokum dla piskląt.' },
-              { id: 'szpak', name: 'Szpak', icon: '🐦‍⬛', habitats: ['nestbox'], fact: 'Zamieszkuje budki i dziuple, często blisko ludzi.', hint: 'Też korzysta z gotowej budki.' },
-              { id: 'jaskolka', name: 'Jaskółka', icon: '🕊️', habitats: ['puddle'], fact: 'Lepi gniazdo z błota wygrzebanego z kałuży.', hint: 'Potrzebuje błota jako budulca.' },
-              { id: 'zaba', name: 'Żaba', icon: '🐸', habitats: ['puddle', 'meadow'], fact: 'Składa skrzek w wodzie, a poluje w wilgotnej trawie.', hint: 'Woda i wilgotna trawa — nie pień drzewa.' },
-              { id: 'wazka', name: 'Ważka', icon: '🪰', habitats: ['puddle'], fact: 'Jej larwy żyją w wodzie, dorosłe polują nad kałużą.', hint: 'Całe życie związane z wodą.' },
-              { id: 'motyle', name: 'Motyle', icon: '🦋', habitats: ['meadow', 'puddle'], fact: 'Nektar zbierają na łące, a minerały piją z błota.', hint: 'Kwiaty i wilgotne podłoże.' },
-              { id: 'pszczoly', name: 'Pszczoły', icon: '🐝', habitats: ['meadow'], fact: 'Zbierają nektar i pyłek z kwiatów łąki.', hint: 'Szukają kwiatów, nie dziupli.' },
-              { id: 'trzmiele', name: 'Trzmiele', icon: '🐝', habitats: ['meadow'], fact: 'Zapylają kwiaty nawet w chłodne dni.', hint: 'Też potrzebują kwitnącej łąki.' },
-              { id: 'jez', name: 'Jeż', icon: '🦔', habitats: ['meadow'], fact: 'Poluje w wysokiej trawie na owady i ślimaki.', hint: 'Szuka gęstej trawy i kryjówki na ziemi.' }
+              { id: 'puszczyk', name: 'Puszczyk (sowa)', icon: '🦉', markerId: 10, model: null, habitats: ['tree', 'nestbox'], fact: 'W dzień ukrywa się w dziupli lub budce, nocą poluje na gryzonie.', hint: 'Szuka ciemnej kryjówki wysoko nad ziemią.', grid: [[1,0,0,0],[1,1,0,1],[1,1,0,0],[1,1,0,1]] },
+              { id: 'dzieciol', name: 'Dzięcioł', icon: '🐦', markerId: 11, model: 'assets/models/dzieciol.glb', habitats: ['tree'], fact: 'Kuje dziuple w pniach — potem korzystają z nich inne zwierzęta.', hint: 'To ptak, który pracuje na pniu, nie na łące.', grid: [[1,1,1,0],[0,1,0,1],[1,0,0,1],[0,0,0,1]] },
+              { id: 'nietoperz', name: 'Nietoperz', icon: '🦇', markerId: 12, model: 'assets/models/nietoperz.glb', habitats: ['tree'], fact: 'Na dzień wisi w dziupli lub szczelinie kory.', hint: 'Potrzebuje ciemnej szczeliny, nie otwartej przestrzeni.', grid: [[1,0,0,0],[0,0,1,0],[1,1,1,0],[1,0,1,0]] },
+              { id: 'jelonek', name: 'Jelonek rogacz (chrząszcz)', icon: '🪲', markerId: 13, model: null, habitats: ['tree'], fact: 'Jego larwy rozwijają się w próchnie martwego drzewa.', hint: 'Jego domem jest martwe drewno.', grid: [[1,0,0,0],[0,0,0,1],[1,1,1,0],[1,1,0,1]] },
+              { id: 'sikorka', name: 'Sikorka', icon: '🐤', markerId: 14, model: 'assets/models/sikorka.glb', habitats: ['nestbox'], fact: 'Chętnie zakłada gniazdo w budce lęgowej i zjada tysiące gąsienic.', hint: 'Potrzebuje gotowego, bezpiecznego lokum dla piskląt.', grid: [[1,1,0,0],[1,0,1,0],[1,0,0,0],[0,0,1,1]] },
+              { id: 'szpak', name: 'Szpak', icon: '🐦‍⬛', markerId: 15, model: null, habitats: ['nestbox'], fact: 'Zamieszkuje budki i dziuple, często blisko ludzi.', hint: 'Też korzysta z gotowej budki.', grid: [[0,1,1,1],[1,1,0,0],[0,1,1,1],[0,1,0,0]] },
+              { id: 'jaskolka', name: 'Jaskółka', icon: '🕊️', markerId: 16, model: null, habitats: ['puddle'], fact: 'Lepi gniazdo z błota wygrzebanego z kałuży.', hint: 'Potrzebuje błota jako budulca.', grid: [[1,1,1,0],[1,0,0,1],[0,1,0,0],[1,1,0,0]] },
+              { id: 'zaba', name: 'Żaba', icon: '🐸', markerId: 17, model: 'assets/models/zaba.glb', habitats: ['puddle', 'meadow'], fact: 'Składa skrzek w wodzie, a poluje w wilgotnej trawie.', hint: 'Woda i wilgotna trawa — nie pień drzewa.', grid: [[0,1,1,0],[0,0,1,1],[0,0,1,1],[0,0,1,0]] },
+              { id: 'wazka', name: 'Ważka', icon: '🪰', markerId: 18, model: 'assets/models/wazka.glb', habitats: ['puddle'], fact: 'Jej larwy żyją w wodzie, dorosłe polują nad kałużą.', hint: 'Całe życie związane z wodą.', grid: [[1,1,0,1],[1,0,1,0],[0,1,1,1],[1,0,0,0]] },
+              { id: 'motyle', name: 'Motyle', icon: '🦋', markerId: 19, model: 'assets/models/motyle.glb', habitats: ['meadow', 'puddle'], fact: 'Nektar zbierają na łące, a minerały piją z błota.', hint: 'Kwiaty i wilgotne podłoże.', grid: [[0,1,0,0],[0,0,1,1],[1,0,1,1],[0,1,1,0]] },
+              { id: 'pszczoly', name: 'Pszczoły', icon: '🐝', markerId: 20, model: null, habitats: ['meadow'], fact: 'Zbierają nektar i pyłek z kwiatów łąki.', hint: 'Szukają kwiatów, nie dziupli.', grid: [[0,1,0,1],[0,1,1,1],[1,1,1,0],[0,0,1,0]] },
+              { id: 'trzmiele', name: 'Trzmiele', icon: '🐝', markerId: 21, model: null, habitats: ['meadow'], fact: 'Zapylają kwiaty nawet w chłodne dni.', hint: 'Też potrzebują kwitnącej łąki.', grid: [[1,1,0,0],[1,0,1,1],[1,0,0,0],[1,0,1,1]] },
+              { id: 'jez', name: 'Jeż', icon: '🦔', markerId: 22, model: null, habitats: ['meadow'], fact: 'Poluje w wysokiej trawie na owady i ślimaki.', hint: 'Szuka gęstej trawy i kryjówki na ziemi.', grid: [[1,1,0,0],[0,1,1,0],[0,0,0,1],[0,0,1,1]] }
             ];
 
             // Generate deterministic AR.js .patt Blob URL from 4x4 grid so markery.html matches 100%
@@ -346,6 +346,8 @@
               const [detectedMarkers, setDetectedMarkers] = useState([]);
               const [adjacentPairs, setAdjacentPairs] = useState([]);
               const [patternUrls, setPatternUrls] = useState({});
+              const [animalPatternUrls, setAnimalPatternUrls] = useState({});
+              const [visibleAnimals, setVisibleAnimals] = useState({});
               const [matchSelected, setMatchSelected] = useState(null);
               const [matches, setMatches] = useState({});
               const [matchMsg, setMatchMsg] = useState(null);
@@ -359,8 +361,14 @@
                   urls[el.id] = createPatternBlobUrl(el.grid);
                 });
                 setPatternUrls(urls);
+                const animalUrls = {};
+                HABITAT_ANIMALS.forEach((animal) => {
+                  animalUrls[animal.id] = createPatternBlobUrl(animal.grid);
+                });
+                setAnimalPatternUrls(animalUrls);
                 return () => {
                   Object.values(urls).forEach((u) => URL.revokeObjectURL(u));
+                  Object.values(animalUrls).forEach((u) => URL.revokeObjectURL(u));
                 };
               }, []);
 
@@ -419,6 +427,16 @@
                   });
 
                   setDetectedMarkers(visible);
+
+                  // Track which animal markers are on screen (their 3D models load lazily)
+                  const seenAnimals = {};
+                  HABITAT_ANIMALS.forEach((animal) => {
+                    const markerEl = document.getElementById(`ar-animal-${animal.id}`);
+                    if (markerEl && markerEl.object3D && markerEl.object3D.visible) {
+                      seenAnimals[animal.id] = true;
+                    }
+                  });
+                  setVisibleAnimals(seenAnimals);
 
                   // Compute pairwise Euclidean distances in 3D AR space
                   const pairs = [];
@@ -798,6 +816,32 @@
                                 </a-marker>
                               )
                             ))}
+                            {/* Animal markers — 3D models load only when their marker is visible */}
+                            {HABITAT_ANIMALS.map((animal) =>
+                              animalPatternUrls[animal.id] ? (
+                                <a-marker
+                                  key={`animal-${animal.id}`}
+                                  id={`ar-animal-${animal.id}`}
+                                  type="pattern"
+                                  url={animalPatternUrls[animal.id]}
+                                  smooth="true"
+                                  smoothCount="5"
+                                >
+                                  <a-entity position="0 0.1 0">
+                                    {animal.model && visibleAnimals[animal.id] ? (
+                                      <a-entity gltf-model={animal.model} position="0 0.1 0" scale="0.5 0.5 0.5"></a-entity>
+                                    ) : (
+                                      <a-entity>
+                                        <a-sphere position="0 0.35 0" radius="0.2" color="#b45309"></a-sphere>
+                                        <a-sphere position="0 0.58 0" radius="0.12" color="#78350f"></a-sphere>
+                                        <a-text value={animal.name} position="0 0.9 0" align="center" scale="0.55 0.55 0.55" color="#065f46"></a-text>
+                                      </a-entity>
+                                    )}
+                                  </a-entity>
+                                </a-marker>
+                              ) : null
+                            )}
+
                             <a-entity camera></a-entity>
                           </a-scene>
 

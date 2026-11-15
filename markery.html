@@ -131,6 +131,23 @@
                 },
             ];
 
+            // Animal markers — identical grids to zadanie-3.html
+            const ANIMAL_CARDS = [
+                { id: 'puszczyk', markerId: 10, name: 'Puszczyk (sowa)', icon: '🦉', role: 'Dziupla lub budka — nocny łowca gryzonie', grid: [[1,0,0,0],[1,1,0,1],[1,1,0,0],[1,1,0,1]] },
+                { id: 'dzieciol', markerId: 11, name: 'Dzięcioł', icon: '🐦', role: 'Pień drzewa — kuje dziuple dla innych', grid: [[1,1,1,0],[0,1,0,1],[1,0,0,1],[0,0,0,1]] },
+                { id: 'nietoperz', markerId: 12, name: 'Nietoperz', icon: '🦇', role: 'Szczelina kory — dzienna kryjówka', grid: [[1,0,0,0],[0,0,1,0],[1,1,1,0],[1,0,1,0]] },
+                { id: 'jelonek', markerId: 13, name: 'Jelonek rogacz', icon: '🪲', role: 'Próchno martwego drzewa — larwy', grid: [[1,0,0,0],[0,0,0,1],[1,1,1,0],[1,1,0,1]] },
+                { id: 'sikorka', markerId: 14, name: 'Sikorka', icon: '🐤', role: 'Budka lęgowa — pisklęta i gąsienice', grid: [[1,1,0,0],[1,0,1,0],[1,0,0,0],[0,0,1,1]] },
+                { id: 'szpak', markerId: 15, name: 'Szpak', icon: '🐦‍⬛', role: 'Budka lub dziupla — mieszkaniec osiedli', grid: [[0,1,1,1],[1,1,0,0],[0,1,1,1],[0,1,0,0]] },
+                { id: 'jaskolka', markerId: 16, name: 'Jaskółka', icon: '🕊️', role: 'Błoto z kałuży — lepienie gniazda', grid: [[1,1,1,0],[1,0,0,1],[0,1,0,0],[1,1,0,0]] },
+                { id: 'zaba', markerId: 17, name: 'Żaba', icon: '🐸', role: 'Woda i wilgotna trawa', grid: [[0,1,1,0],[0,0,1,1],[0,0,1,1],[0,0,1,0]] },
+                { id: 'wazka', markerId: 18, name: 'Ważka', icon: '🪰', role: 'Kałuża — larwy żyją w wodzie', grid: [[1,1,0,1],[1,0,1,0],[0,1,1,1],[1,0,0,0]] },
+                { id: 'motyle', markerId: 19, name: 'Motyle', icon: '🦋', role: 'Kwiaty łąki i minerały z błota', grid: [[0,1,0,0],[0,0,1,1],[1,0,1,1],[0,1,1,0]] },
+                { id: 'pszczoly', markerId: 20, name: 'Pszczoły', icon: '🐝', role: 'Kwitnąca łąka — pyłek i nektar', grid: [[0,1,0,1],[0,1,1,1],[1,1,1,0],[0,0,1,0]] },
+                { id: 'trzmiele', markerId: 21, name: 'Trzmiele', icon: '🐝', role: 'Kwiaty nawet w chłodne dni', grid: [[1,1,0,0],[1,0,1,1],[1,0,0,0],[1,0,1,1]] },
+                { id: 'jez', markerId: 22, name: 'Jeż', icon: '🦔', role: 'Wysoka trawa — owady i ślimaki', grid: [[1,1,0,0],[0,1,1,0],[0,0,0,1],[0,0,1,1]] }
+            ];
+
             // Renders a crisp AR.js marker with thick black border + inner 4x4 pattern
             function MarkerCanvas({ grid, label, onDownloadReady }) {
                 const canvasRef = useRef(null);
@@ -186,7 +203,7 @@
 
                             {/* Nature Photo with SVG Fallback */}
                             <div className="h-32 w-full rounded-2xl overflow-hidden bg-emerald-50 border border-emerald-100 mb-3 flex items-center justify-center">
-                                {!imgFailed ? (
+                                {card.imageUrl && !imgFailed ? (
                                     <img src={card.imageUrl} alt={card.name} crossOrigin="anonymous" onError={() => setImgFailed(true)} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="text-center p-3">
@@ -266,12 +283,28 @@
                                 </div>
                             </section>
 
-                            {/* 6 Printable Marker Cards */}
+                            {/* 6 Printable Habitat Marker Cards */}
+                            <h2 className="text-xl font-black text-slate-900 mb-4">Markery siedlisk (1–6)</h2>
                             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {MARKER_CARDS.map((card) => (
                                     <MarkerCardItem key={card.id} card={card} />
                                 ))}
                             </section>
+
+                            {/* 13 Printable Animal Marker Cards */}
+                            <h2 className="text-xl font-black text-slate-900 mt-10 mb-2">Markery zwierząt (10–22)</h2>
+                            <p className="text-xs text-slate-600 mb-4">
+                                Każde zwierzę ma własny wzór. Pokaż marker kamerze w Zadaniu 3 — nad kartą pojawi się model 3D zwierzęcia.
+                            </p>
+                            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {ANIMAL_CARDS.map((card) => (
+                                    <MarkerCardItem key={card.id} card={card} />
+                                ))}
+                            </section>
+
+                            <p className="mt-8 text-[10px] leading-relaxed text-slate-400">
+                                Modele 3D zwierząt (Sketchfab): „Woodpecker” — kenchoo, „Bat” — denys4624, „Eurasian blue tit Bird” — marlonsatelier, „Frog” — sergei-ryzhov, „Dragonfly” — 7SkyArtist, „12 Animated butterflies” — bestgamekits. Wzory markerów są generowane lokalnie.
+                            </p>
                         </main>
                     </div>
                 );
