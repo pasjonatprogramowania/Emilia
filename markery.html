@@ -63,13 +63,12 @@
                     name: 'Stare spróchniałe drzewo',
                     role: 'Schronienie dla nietoperzy, dzięciołów i chrząszczy',
                     icon: '🪵',
-                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Dead_tree_in_forest.jpg/640px-Dead_tree_in_forest.jpg',
                     grid: [
-                        [1, 0, 0, 1],
-                        [0, 1, 1, 0],
-                        [0, 1, 1, 0],
-                        [1, 0, 0, 1],
-                    ],
+                        [0,1,1,1],
+                        [1,1,1,0],
+                        [0,1,0,0],
+                        [0,0,1,1],
+],
                 },
                 {
                     id: 'nestbox',
@@ -77,7 +76,6 @@
                     name: 'Budka lęgowa',
                     role: 'Bezpieczny dom lęgowy dla sikorek i szpaków',
                     icon: '🏠',
-                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Nistkasten_01.jpg/640px-Nistkasten_01.jpg',
                     grid: [
                         [0, 1, 1, 0],
                         [1, 1, 1, 1],
@@ -91,13 +89,12 @@
                     name: 'Kałuża z błotem',
                     role: 'Materiał na gniazda dla jaskółek i wodopój',
                     icon: '💧',
-                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Puddle_in_forest.jpg/640px-Puddle_in_forest.jpg',
                     grid: [
-                        [1, 1, 0, 0],
-                        [1, 1, 0, 0],
-                        [0, 0, 1, 1],
-                        [0, 0, 1, 1],
-                    ],
+                        [1,0,1,0],
+                        [0,1,0,1],
+                        [1,1,0,0],
+                        [0,0,0,1],
+],
                 },
                 {
                     id: 'meadow',
@@ -105,13 +102,12 @@
                     name: 'Dzika łąka kwietna',
                     role: 'Stołówka dla pszczół, trzmieli i motyli',
                     icon: '🌼',
-                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Wildflower_meadow_in_summer.jpg/640px-Wildflower_meadow_in_summer.jpg',
                     grid: [
-                        [0, 1, 0, 1],
-                        [1, 0, 1, 0],
-                        [0, 1, 0, 1],
-                        [1, 0, 1, 0],
-                    ],
+                        [0,1,0,0],
+                        [1,0,1,1],
+                        [0,1,0,0],
+                        [0,1,1,1],
+],
                 },
                 {
                     id: 'lawn',
@@ -119,7 +115,6 @@
                     name: 'Idealnie przystrzyżony trawnik',
                     role: 'Element testowy („zielona pustynia” bez kwiatów)',
                     icon: '⛳',
-                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Landsvale.jpg/640px-Landsvale.jpg',
                     grid: [
                         [1, 1, 1, 1],
                         [0, 0, 0, 0],
@@ -133,13 +128,12 @@
                     name: 'Lampa ogrodowa świecąca całą noc',
                     role: 'Element testowy (zanieczyszczenie światłem)',
                     icon: '💡',
-                    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Big-eared-townsend-fledermaus.jpg/640px-Big-eared-townsend-fledermaus.jpg',
                     grid: [
-                        [1, 0, 1, 0],
-                        [1, 0, 1, 0],
-                        [0, 1, 0, 1],
-                        [0, 1, 0, 1],
-                    ],
+                        [0,0,0,1],
+                        [1,1,0,1],
+                        [1,1,0,1],
+                        [1,0,1,0],
+],
                 },
             ];
 
@@ -170,7 +164,7 @@
                     if (!canvas) return;
                     const ctx = canvas.getContext('2d');
                     const size = 640;
-                    const quiet = 32; // white margin around the marker
+                    const quiet = 64; // white margin around the marker (10% of card)
                     const frame = size - quiet * 2; // black square side
                     const inner = frame * 0.5; // patternRatio 0.5
                     const innerOffset = quiet + (frame - inner) / 2;

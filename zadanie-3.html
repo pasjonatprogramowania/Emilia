@@ -50,27 +50,39 @@
             body.arjs-active header.app-header {
                 display: none !important;
             }
+            /* AR.js mounts the camera feed as <video id="arjs-video"> in body, at z-index:-2.
+               It also writes negative margins to center the wide feed — reset them, otherwise
+               the camera image drifts to the left of the 3D canvas. */
             #arjs-video {
                 position: fixed !important;
+                inset: 0 !important;
                 top: 0 !important;
                 left: 0 !important;
                 width: 100vw !important;
                 height: 100vh !important;
+                margin: 0 !important;
                 object-fit: cover !important;
                 z-index: -2 !important;
             }
-            /* A-Frame canvas must fill the container without repositioning it */
+            /* The A-Frame viewport must be 1:1 with the camera feed: full viewport, no offsets */
             .ar-viewport {
-                position: relative;
+                position: fixed !important;
+                inset: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
                 overflow: hidden;
                 background: transparent;
             }
-            .ar-viewport a-scene {
-                width: 100% !important;
-                height: 100% !important;
-                display: block;
-            }
+            .ar-viewport a-scene,
             .ar-viewport .a-canvas {
+                position: fixed !important;
+                inset: 0 !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                margin: 0 !important;
+                display: block;
                 background: transparent !important;
             }
         </style>
@@ -96,11 +108,11 @@
                 desc: 'Stare, martwe drewno tętni życiem! Dziuple i szczeliny kory to bezcenny dom dla ptaków, nietoperzy i pożytecznych chrząszczy.',
                 // Unique 4x4 high-contrast visual signature for deterministic .patt generation
                 grid: [
-                  [1,0,0,1],
-                  [0,1,1,0],
-                  [0,1,1,0],
-                  [1,0,0,1]
-                ]
+                    [0,1,1,1],
+                    [1,1,1,0],
+                    [0,1,0,0],
+                    [0,0,1,1],
+]
               },
               {
                 id: 'nestbox',
@@ -132,11 +144,11 @@
                 residents: ['🕊️ Jaskółka oknówka (błoto na gniazdo!)', '🐸 Żaba trawna i ważki', '🦋 Motyle (piją minerały z błota)'],
                 desc: 'Kałuża z błotem przyciąga jaskółki, które lepią z niego gniazda, oraz służy jako wodopój dla owadów i ptaków.',
                 grid: [
-                  [1,1,0,0],
-                  [1,1,0,0],
-                  [0,0,1,1],
-                  [0,0,1,1]
-                ]
+                    [1,0,1,0],
+                    [0,1,0,1],
+                    [1,1,0,0],
+                    [0,0,0,1],
+]
               },
               {
                 id: 'meadow',
@@ -150,11 +162,11 @@
                 residents: ['🐝 Pszczoły i trzmiele', '🦋 Paź królowej i rusałki', '🦔 Jeż (poluje w wysokiej trawie)'],
                 desc: 'Niekoszona łąka zatrzymuje wilgoć w glebie, chłodzi otoczenie i karmi dziesiątki gatunków zapylaczy.',
                 grid: [
-                  [0,1,0,1],
-                  [1,0,1,0],
-                  [0,1,0,1],
-                  [1,0,1,0]
-                ]
+                    [0,1,0,0],
+                    [1,0,1,1],
+                    [0,1,0,0],
+                    [0,1,1,1],
+]
               },
               {
                 id: 'lawn',
@@ -186,11 +198,11 @@
                 residents: ['⚠️ Odstrasza nietoperze i dezorientuje ćmy'],
                 desc: 'Sztuczne światło w nocy oślepia i odstrasza nietoperze, przyciąga oraz wyczerpuje ćmy, a także zaburza sen ptaków.',
                 grid: [
-                  [1,0,1,0],
-                  [1,0,1,0],
-                  [0,1,0,1],
-                  [0,1,0,1]
-                ]
+                    [0,0,0,1],
+                    [1,1,0,1],
+                    [1,1,0,1],
+                    [1,0,1,0],
+]
               }
             ];
 
@@ -409,22 +421,31 @@
               useEffect(() => {
                 if (mode !== 'webar' || cameraStatus !== 'ready') return;
 
+                let hitStreak = {};
+
                 const interval = setInterval(() => {
                   const visible = [];
+                  const nextStreak = {};
                   ECOSYSTEM_ELEMENTS.forEach((el) => {
                     const markerEl = document.getElementById(`ar-marker-${el.id}`);
                     if (markerEl && markerEl.object3D && markerEl.object3D.visible) {
-                      const pos = markerEl.object3D.position;
-                      visible.push({
-                        id: el.id,
-                        name: el.shortName,
-                        icon: el.icon,
-                        x: pos.x,
-                        y: pos.y,
-                        z: pos.z
-                      });
+                      // Require 2 consecutive frames so a single false blip cannot flip the slots
+                      const streak = (hitStreak[el.id] || 0) + 1;
+                      nextStreak[el.id] = streak;
+                      if (streak >= 2) {
+                        const pos = markerEl.object3D.position;
+                        visible.push({
+                          id: el.id,
+                          name: el.shortName,
+                          icon: el.icon,
+                          x: pos.x,
+                          y: pos.y,
+                          z: pos.z
+                        });
+                      }
                     }
                   });
+                  hitStreak = nextStreak;
 
                   setDetectedMarkers(visible);
 
@@ -528,11 +549,14 @@
                   clearTimeout(timerResize);
                   clearTimeout(timerResize2);
                   clearTimeout(timerCheck);
-                  // Release the camera when leaving the AR view
-                  const leftVideo = sceneContainerRef.current && sceneContainerRef.current.querySelector('video');
-                  if (leftVideo && leftVideo.srcObject && leftVideo.srcObject.getTracks) {
-                    leftVideo.srcObject.getTracks().forEach((track) => track.stop());
-                  }
+                  // AR.js mounts <video id="arjs-video"> directly in document.body — stop and remove it
+                  document.querySelectorAll('#arjs-video').forEach((videoEl) => {
+                    if (videoEl.srcObject && videoEl.srcObject.getTracks) {
+                      videoEl.srcObject.getTracks().forEach((track) => track.stop());
+                      videoEl.srcObject = null;
+                    }
+                    videoEl.remove();
+                  });
                 };
               }, [mode, cameraStatus]);
 
@@ -728,8 +752,8 @@
 
                     {/* WEBAR CAMERA VIEW (AR.js + A-Frame) */}
                     {mode === 'webar' && cameraStatus === 'ready' && (
-                      <section className="ar-fullscreen fixed inset-0 z-50 flex flex-col bg-transparent">
-                        <div className="bg-emerald-950 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+                      <section className="ar-fullscreen fixed inset-0 z-50 bg-transparent">
+                        <div className="absolute top-0 left-0 right-0 z-20 bg-emerald-950/95 backdrop-blur-md text-white px-4 py-3 flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
                             <span className="text-xs sm:text-sm font-extrabold">
@@ -750,7 +774,7 @@
                         </div>
 
                         {arDiag && (
-                          <div className="bg-amber-400 text-amber-950 px-3 py-2 text-[11px] sm:text-xs font-bold flex items-center justify-between gap-2">
+                          <div className="absolute top-[56px] left-0 right-0 z-20 bg-amber-400 text-amber-950 px-3 py-2 text-[11px] sm:text-xs font-bold flex items-center justify-between gap-2">
                             <span>{arDiag}</span>
                             <button onClick={startWebAR} className="px-3 py-1.5 rounded-lg bg-amber-950 text-amber-50 font-extrabold shrink-0">
                               Spróbuj ponownie
@@ -758,13 +782,13 @@
                           </div>
                         )}
 
-                        {/* A-Frame AR.js Viewport */}
-                        <div ref={sceneContainerRef} className="ar-viewport relative w-full flex-1 min-h-0 bg-transparent">
+                        {/* A-Frame AR.js Viewport — full viewport, 1:1 with #arjs-video */}
+                        <div ref={sceneContainerRef} className="ar-viewport bg-transparent">
                           <a-scene
                             embedded
                             vr-mode-ui="enabled: false"
                             loading-screen="enabled: false"
-                            arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; maxDetectionRate: 60; patternRatio: 0.5;"
+                            arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; maxDetectionRate: 30; patternRatio: 0.5;"
                           >
                             {ECOSYSTEM_ELEMENTS.map((el) => (
                               patternUrls[el.id] && (
@@ -775,6 +799,8 @@
                                   url={patternUrls[el.id]}
                                   smooth="true"
                                   smoothCount="5"
+                                  smoothTolerance="0.02"
+                                  smoothThreshold="4"
                                 >
                                   {/* 3D Representation floating above marker */}
                                   <a-entity position="0 0.5 0">
@@ -826,6 +852,8 @@
                                   url={animalPatternUrls[animal.id]}
                                   smooth="true"
                                   smoothCount="5"
+                                  smoothTolerance="0.02"
+                                  smoothThreshold="4"
                                 >
                                   <a-entity position="0 0.1 0">
                                     {animal.model && visibleAnimals[animal.id] ? (
@@ -842,7 +870,7 @@
                               ) : null
                             )}
 
-                            <a-entity camera></a-entity>
+                            <a-entity camera look-controls="enabled: false" wasd-controls="enabled: false"></a-entity>
                           </a-scene>
 
                           {/* Live Spatial Proximity Overlay */}
