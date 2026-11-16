@@ -191,6 +191,7 @@
 
                 const completedCount = TASKS.filter((task) => Boolean(completed[task.id])).length;
                 const allCompleted = completedCount === TASKS.length;
+                const remainingTasks = TASKS.length - completedCount;
 
                 return (
                     <div className="min-h-screen flex flex-col">
@@ -208,12 +209,15 @@
 
                                 <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
                                     <a
-                                        href="quiz.html"
-                                        aria-label="Quiz podsumowujący"
+                                        href={allCompleted ? 'quiz.html' : undefined}
+                                        aria-label={allCompleted ? 'Quiz podsumowujący' : 'Quiz zablokowany — ukończ wszystkie zadania'}
+                                        aria-disabled={!allCompleted}
+                                        title={allCompleted ? 'Rozwiąż quiz podsumowujący' : `Zablokowany — zostało ${remainingTasks} zadań`}
+                                        onClick={(e) => { if (!allCompleted) e.preventDefault(); }}
                                         className={`inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-bold transition shadow-sm ${
                                             allCompleted
-                                                ? 'bg-emerald-600 hover:bg-emerald-700 text-white animate-bounce'
-                                                : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                                                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                                : 'bg-slate-200 text-slate-500 cursor-not-allowed'
                                         }`}
                                     >
                                         <span>{allCompleted ? '🧠' : '🔒'}</span>
@@ -287,6 +291,62 @@
                                             </article>
                                         );
                                     })}
+
+                                    {/* Quiz card — always visible, locked until every task is done */}
+                                    <article
+                                        aria-disabled={!allCompleted}
+                                        className={`relative bg-white rounded-3xl border-2 p-6 flex flex-col justify-between transition-all duration-200 ${
+                                            allCompleted
+                                                ? 'border-emerald-400 shadow-sm hover:shadow-xl hover:-translate-y-1'
+                                                : 'border-slate-200 opacity-70 shadow-none'
+                                        }`}
+                                    >
+                                        <div>
+                                            <div className="flex items-start justify-between gap-2 mb-4">
+                                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold ${allCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
+                                                    Quiz • Podsumowanie
+                                                </span>
+                                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${allCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
+                                                    {allCompleted ? '🔓 Odblokowany' : '🔒 Zablokowany'}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-3.5 mb-3">
+                                                <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center text-3xl shrink-0 ${allCompleted ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200 grayscale'}`}>
+                                                    {allCompleted ? '🧠' : '🔒'}
+                                                </div>
+                                                <div>
+                                                    <h4 className={`text-lg font-black leading-snug ${allCompleted ? 'text-slate-900' : 'text-slate-500'}`}>Wielki Quiz Podsumowujący</h4>
+                                                    <p className="text-xs font-bold text-slate-500">8 pytań ze wszystkich zadań</p>
+                                                </div>
+                                            </div>
+
+                                            <p className={`text-sm leading-relaxed mb-4 ${allCompleted ? 'text-slate-600' : 'text-slate-500'}`}>
+                                                {allCompleted
+                                                    ? 'Wszystkie zadania ukończone! Sprawdź, ile pamiętasz z całej pracowni przyrodniczej.'
+                                                    : `Ukończ wszystkie zadania, aby odblokować quiz. Zostało ${remainingTasks} z ${TASKS.length}.`}
+                                            </p>
+
+                                            <div className={`rounded-2xl p-3.5 border mb-5 ${allCompleted ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
+                                                <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Postęp odblokowania</p>
+                                                <p className="text-xs font-semibold text-slate-700 leading-snug mb-2">{completedCount} / {TASKS.length} zadań ukończonych</p>
+                                                <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
+                                                    <div className={`h-full transition-all ${allCompleted ? 'bg-emerald-500' : 'bg-slate-400'}`} style={{ width: `${Math.round((completedCount / TASKS.length) * 100)}%` }}></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {allCompleted ? (
+                                            <a href="quiz.html" className="w-full py-3 px-4 rounded-xl font-extrabold text-sm text-center shadow-md transition flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                                                <span>Rozwiąż quiz</span>
+                                                <span>→</span>
+                                            </a>
+                                        ) : (
+                                            <div aria-disabled="true" className="w-full py-3 px-4 rounded-xl font-extrabold text-sm text-center bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed">
+                                                🔒 Zablokowany — ukończ zadania
+                                            </div>
+                                        )}
+                                    </article>
                                 </div>
                             </section>
                         </main>
