@@ -210,7 +210,7 @@
 
                                 <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
                                     <a
-                                        href={quizUnlocked ? 'quiz.html' : undefined}
+                                        href={quizUnlocked ? 'quiz.html?v=8' : undefined}
                                         aria-label={quizUnlocked ? 'Quiz podsumowujący' : 'Quiz zablokowany — ukończ wszystkie zadania'}
                                         aria-disabled={!quizUnlocked}
                                         title={quizUnlocked ? 'Rozwiąż quiz podsumowujący' : `Zablokowany — zostało ${remainingTasks} zadań`}
@@ -338,7 +338,7 @@
                                         </div>
 
                                         {quizUnlocked ? (
-                                            <a href="quiz.html" className="w-full py-3 px-4 rounded-xl font-extrabold text-sm text-center shadow-md transition flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                                            <a href="quiz.html?v=8" className="w-full py-3 px-4 rounded-xl font-extrabold text-sm text-center shadow-md transition flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
                                                 <span>Rozwiąż quiz</span>
                                                 <span>→</span>
                                             </a>
@@ -364,7 +364,7 @@
                                     <a href="zadanie-6.html" className="hover:text-emerald-700">Zad. 6</a>
                                     <a href="zadanie-7.html" className="hover:text-emerald-700">Zad. 7</a>
                                     <a href="memory.html" className="hover:text-emerald-700">Memory</a>
-                                    <a href="quiz.html" className="hover:text-emerald-700">Quiz</a>
+                                    <a href="quiz.html?v=8" className="hover:text-emerald-700">Quiz</a>
                                 </div>
                             </div>
                         </footer>
