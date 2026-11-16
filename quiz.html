@@ -102,7 +102,8 @@
                 }, []);
 
                 const missingMissions = REQUIRED_MISSIONS.filter((m) => !progress[m.id]);
-                const isLocked = missingMissions.length > 0;
+                // One mission may be skipped: 7 of 8 unlocks the quiz
+                const isLocked = missingMissions.length > 1;
 
                 if (isLocked) {
                     return (
@@ -119,7 +120,7 @@
                                 <div className="w-full max-w-xl bg-white rounded-3xl p-8 border-2 border-rose-200 shadow-sm text-center">
                                     <div className="text-6xl mb-3">🔒</div>
                                     <h2 className="text-2xl font-black text-slate-900 mb-2">Quiz jest zablokowany!</h2>
-                                    <p className="text-sm text-slate-600 mb-6">Aby odblokować Wielki Quiz Podsumowujący, musisz ukończyć wszystkie 8 misji (Zadania 1–7 oraz Memory).</p>
+                                    <p className="text-sm text-slate-600 mb-6">Aby odblokować Wielki Quiz Podsumowujący, ukończ 7 z 8 misji (Zadania 1–7 oraz Memory) — jedno zadanie możesz pominąć.</p>
                                     <div className="space-y-2 text-left mb-6 bg-rose-50 p-4 rounded-2xl border border-rose-200">
                                         <p className="text-xs font-black uppercase text-rose-900 mb-2">Pozostałe do wykonania:</p>
                                         {missingMissions.map((m) => (
@@ -173,7 +174,7 @@
                                     <h2 className="text-2xl font-black text-slate-900 mb-1">
                                         Twój wynik: {score} / {QUESTIONS.length}
                                     </h2>
-                                    <p className="text-sm text-slate-600 mb-6">Gratulacje! Ukończyłeś wszystkie misje i quiz przyrodniczy.</p>
+                                    <p className="text-sm text-slate-600 mb-6">Gratulacje! Ukończyłeś Wielki Quiz Podsumowujący.</p>
                                     <a href="index.html" className="inline-block py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm transition">
                                         Wróć do menu głównego
                                     </a>
