@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="data:," />
+        <title>Zadanie 6: Klucz Dychotomiczny Kręgowców | EkoOdkrywcy 1–3</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <style>
+            body {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                background-color: #f0fdfa;
+            }
+            h1,
+            h2,
+            h3,
+            .font-display {
+                font-family: 'Nunito', sans-serif;
+            }
+            @keyframes popIn {
+                0% {
+                    transform: scale(0.94);
+                    opacity: 0;
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+            .animate-pop {
+                animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+        </style>
+    </head>
+    <body class="text-slate-800 antialiased">
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { useState } = React;
+
+            const ANIMALS_TO_CLASSIFY = [
+                { id: 'wilk', name: 'Wilk szary', icon: '🐺', classTarget: 'Ssaki', hint: 'Ma gęstą sierść i karmi młode mlekiem.' },
+                { id: 'bocian', name: 'Bocian biały', icon: '🦢', classTarget: 'Ptaki', hint: 'Jego ciało pokrywają pióra, a szczęki tworzą bezzębny dziób.' },
+                { id: 'jaszczurka', name: 'Jaszczurka zwinka', icon: '🦎', classTarget: 'Gady', hint: 'Skóra jest sucha i pokryta rogowymi łuskami.' },
+                { id: 'zaba', name: 'Żaba trawna', icon: '🐸', classTarget: 'Płazy', hint: 'Skóra jest naga, wilgotna i śluzowata, bez łusek.' },
+                { id: 'okon', name: 'Okoń pospolity', icon: '🐟', classTarget: 'Ryby', hint: 'Ciało opływowe, ma płetwy i całe życie oddycha skrzelami.' },
+                { id: 'gacek', name: 'Nietoperz gacek', icon: '🦇', classTarget: 'Ssaki', hint: 'Gatunek mylący: potrafi latać, ale ma sierść i karmi młode mlekiem!' },
+                { id: 'padalec', name: 'Padalec zwyczajny', icon: '🐍', classTarget: 'Gady', hint: 'Gatunek mylący: nie ma nóg jak wąż, ale jest jaszczurką o suchej skórze z łuskami.' },
+            ];
+
+            const CLASSES = [
+                { id: 'Ssaki', name: 'Ssaki', icon: '🐾', desc: 'Stacieplne, gruczoły mleczne, oddychają płucami.' },
+                { id: 'Ptaki', name: 'Ptaki', icon: '🦅', desc: 'Staocieplne, skrzydła i dziób, jaja w twardej skorupie.' },
+                { id: 'Gady', name: 'Gady', icon: '🐍', desc: 'Zmiennocieplne, sucha skóra z rogowymi łuskami.' },
+                { id: 'Płazy', name: 'Płazy', icon: '🐸', desc: 'Naga, wilgotna skóra bez łusek, przeobrażenie.' },
+                { id: 'Ryby', name: 'Ryby', icon: '🐟', desc: 'Wodne, płetwy, oddychanie skrzelami.' },
+            ];
+
+            function App() {
+                const [currentIndex, setCurrentIndex] = useState(0);
+                const [step, setStep] = useState(1); // 1: Q1, 2: Q2, 3: Q3, 4: Q4, finished
+                const [message, setMessage] = useState(null);
+                const [classified, setClassified] = useState({});
+
+                const animal = ANIMALS_TO_CLASSIFY[currentIndex];
+
+                const handleAnswer = (answerYes) => {
+                    if (step === 1) {
+                        if (answerYes) {
+                            checkResult('Ssaki');
+                        } else {
+                            setStep(2);
+                        }
+                    } else if (step === 2) {
+                        if (answerYes) {
+                            checkResult('Ptaki');
+                        } else {
+                            setStep(3);
+                        }
+                    } else if (step === 3) {
+                        if (answerYes) {
+                            checkResult('Gady');
+                        } else {
+                            setStep(4);
+                        }
+                    } else if (step === 4) {
+                        if (answerYes) {
+                            checkResult('Ryby');
+                        } else {
+                            checkResult('Płazy');
+                        }
+                    }
+                };
+
+                const checkResult = (targetClass) => {
+                    const correct = targetClass === animal.classTarget;
+                    if (correct) {
+                        setMessage({ ok: true, text: `Brawo! ${animal.name} to prawidłowo gromada: ${targetClass}!` });
+                        const nextClassified = { ...classified, [animal.id]: targetClass };
+                        setClassified(nextClassified);
+
+                        if (Object.keys(nextClassified).length === ANIMALS_TO_CLASSIFY.length) {
+                            try {
+                                const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
+                                saved['zadanie-6'] = true;
+                                localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
+                            } catch (e) {}
+                        }
+                    } else {
+                        setMessage({ ok: false, text: `Nie tak. ${animal.name} należy do gromady ${animal.classTarget}. Wskazówka: ${animal.hint}` });
+                    }
+                };
+
+                const nextAnimal = () => {
+                    setMessage(null);
+                    setStep(1);
+                    setCurrentIndex((prev) => (prev + 1) % ANIMALS_TO_CLASSIFY.length);
+                };
+
+                return (
+                    <div className="min-h-screen flex flex-col">
+                        <header className="bg-white border-b border-teal-200 sticky top-0 z-30">
+                            <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
+                                <a href="index.html" aria-label="Powrót do menu" className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-base shrink-0 transition">
+                                    ←
+                                </a>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] font-extrabold uppercase tracking-wide text-teal-700 leading-none mb-1">Zadanie 6 • Klucz Dychotomiczny</p>
+                                    <h1 className="text-sm sm:text-lg font-black text-slate-900 truncate leading-tight">Oznaczanie gromad kręgowców</h1>
+                                </div>
+                                <span className="px-3 py-2 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 text-xs font-extrabold shrink-0">
+                                    {Object.keys(classified).length} / {ANIMALS_TO_CLASSIFY.length}
+                                </span>
+                            </div>
+                        </header>
+
+                        <main className="flex-1 max-w-4xl w-full mx-auto px-3 py-4 sm:px-4 sm:py-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                                {/* Left: Active Animal Card */}
+                                <div className="lg:col-span-5 bg-white rounded-3xl p-6 border-2 border-teal-200 shadow-sm text-center">
+                                    <span className="text-6xl mb-3 block">{animal.icon}</span>
+                                    <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-xs font-extrabold mb-2 inline-block">Badany gatunek</span>
+                                    <h2 className="text-2xl font-black text-slate-900 mb-2">{animal.name}</h2>
+                                    <p className="text-xs text-slate-600 mb-4">{animal.hint}</p>
+
+                                    {classified[animal.id] && (
+                                        <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold animate-pop">
+                                            ✅ Zaliczone do gromady: <strong>{classified[animal.id]}</strong>
+                                        </div>
+                                    )}
+
+                                    <button onClick={nextAnimal} className="mt-4 w-full py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-black text-xs transition">
+                                        Następny zwierzak ➔
+                                    </button>
+                                </div>
+
+                                {/* Right: Dichotomous Key Questions */}
+                                <div className="lg:col-span-7 bg-white rounded-3xl p-6 border-2 border-teal-200 shadow-sm">
+                                    <h3 className="text-lg font-black text-slate-900 mb-4">Drzewo decyzyjne klucza dychotomicznego</h3>
+
+                                    <div className="space-y-4 mb-6">
+                                        <div className={`p-4 rounded-2xl border-2 transition ${step === 1 ? 'bg-teal-50 border-teal-500 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-60'}`}>
+                                            <p className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-1">Pytanie 1</p>
+                                            <p className="font-extrabold text-slate-900 text-sm">Czy zwierzę ma sierść lub włosy i karmi młode własnym mlekiem?</p>
+                                        </div>
+
+                                        {step >= 2 && (
+                                            <div className={`p-4 rounded-2xl border-2 transition ${step === 2 ? 'bg-teal-50 border-teal-500 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-60'}`}>
+                                                <p className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-1">Pytanie 2</p>
+                                                <p className="font-extrabold text-slate-900 text-sm">Czy ciało pokrywają pióra, a szczęki tworzą bezzębny dziób?</p>
+                                            </div>
+                                        )}
+
+                                        {step >= 3 && (
+                                            <div className={`p-4 rounded-2xl border-2 transition ${step === 3 ? 'bg-teal-50 border-teal-500 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-60'}`}>
+                                                <p className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-1">Pytanie 3</p>
+                                                <p className="font-extrabold text-slate-900 text-sm">Czy skóra jest sucha i pokryta rogowymi łuskami lub tarczkami?</p>
+                                            </div>
+                                        )}
+
+                                        {step >= 4 && (
+                                            <div className={`p-4 rounded-2xl border-2 transition ${step === 4 ? 'bg-teal-50 border-teal-500 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-60'}`}>
+                                                <p className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-1">Pytanie 4</p>
+                                                <p className="font-extrabold text-slate-900 text-sm">Czy ciało jest opływowe, ma płetwy, a zwierzę całe życie oddycha skrzelami?</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {!message ? (
+                                        <div className="flex gap-3">
+                                            <button onClick={() => handleAnswer(true)} className="flex-1 py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm transition shadow">
+                                                TAK 👍
+                                            </button>
+                                            <button onClick={() => handleAnswer(false)} className="flex-1 py-3 px-4 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-sm transition shadow">
+                                                NIE 👎
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className={`p-4 rounded-2xl border text-sm font-semibold mb-4 animate-pop ${message.ok ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-rose-50 border-rose-300 text-rose-900'}`}>{message.text}</div>
+                                    )}
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        </script>
+    </body>
+</html>

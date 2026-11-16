@@ -2,89 +2,30 @@
 <html lang="pl">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="data:," />
-        <title>Zadanie 3: Zbuduj Idealny Ekosystem (WebAR) | EkoOdkrywcy 1–3</title>
-        <!-- Tailwind CSS -->
+        <title>Zadanie 3: Zbuduj Idealny Ekosystem (Sandbox) | EkoOdkrywcy 1–3</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <!-- Google Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <!-- A-Frame & AR.js (CDN) -->
-        <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
-        <!-- React 18 & Babel Standalone -->
         <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
         <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
         <style>
             body {
                 font-family: 'Plus Jakarta Sans', sans-serif;
                 background-color: #ecfdf5;
             }
-            h1,
-            h2,
-            h3,
-            .font-display {
+            h1, h2, h3, .font-display {
                 font-family: 'Nunito', sans-serif;
             }
-            html,
-            body {
-                max-width: 100%;
-                overflow-x: hidden;
+            @keyframes popIn {
+                0% { transform: scale(0.92); opacity: 0; }
+                100% { transform: scale(1); opacity: 1; }
             }
-            /* AR.js mounts the camera feed as <video id="arjs-video"> in body, at z-index:-2.
-               While AR runs, the page must stay transparent so that feed is visible. */
-            html.arjs-active {
-                background-color: #000;
-            }
-            body.arjs-active {
-                background-color: transparent !important;
-                overflow: hidden;
-            }
-            /* While AR is on, only the fullscreen AR overlay may be visible —
-               otherwise page panels paint above the camera feed. */
-            body.arjs-active main > *:not(.ar-fullscreen) {
-                display: none !important;
-            }
-            body.arjs-active header.app-header {
-                display: none !important;
-            }
-            /* AR.js mounts the camera feed as <video id="arjs-video"> in body, at z-index:-2.
-               It also writes negative margins to center the wide feed — reset them, otherwise
-               the camera image drifts to the left of the 3D canvas. */
-            #arjs-video {
-                position: fixed !important;
-                inset: 0 !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100vw !important;
-                height: 100vh !important;
-                margin: 0 !important;
-                object-fit: cover !important;
-                z-index: -2 !important;
-            }
-            /* The A-Frame viewport must be 1:1 with the camera feed: full viewport, no offsets */
-            .ar-viewport {
-                position: fixed !important;
-                inset: 0 !important;
-                width: 100vw !important;
-                height: 100vh !important;
-                overflow: hidden;
-                background: transparent;
-            }
-            .ar-viewport a-scene,
-            .ar-viewport .a-canvas {
-                position: fixed !important;
-                inset: 0 !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100vw !important;
-                height: 100vh !important;
-                margin: 0 !important;
-                display: block;
-                background: transparent !important;
+            .animate-pop {
+                animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             }
         </style>
     </head>
@@ -92,1134 +33,334 @@
         <div id="root"></div>
 
         <script type="text/babel">
-            const { useState, useEffect, useRef, useMemo } = React;
+            const { useState } = React;
 
-            // 6 Ecosystem Elements (matching Image #3 + WebAR Multi-Marker tracking)
             const ECOSYSTEM_ELEMENTS = [
-              {
-                id: 'tree',
-                markerId: 0,
-                model: 'assets/models/habitat-tree.glb',
-                name: 'Stare spróchniałe drzewo',
-                shortName: 'Spróchniałe drzewo',
-                icon: '🪵',
-                category: 'natural',
-                score: 35,
-                color: '#78350f',
-                residents: ['🦉 Puszczyk i dzięcioł (dziuple)', '🦇 Nietoperze (kryjówka dzienna)', '🪲 Jelonek rogacz (larwy w próchnie)'],
-                desc: 'Stare, martwe drewno tętni życiem! Dziuple i szczeliny kory to bezcenny dom dla ptaków, nietoperzy i pożytecznych chrząszczy.',
-                // Unique 4x4 high-contrast visual signature for deterministic .patt generation
-                grid: [
-                    [0,1,1,1],
-                    [1,1,1,0],
-                    [0,1,0,0],
-                    [0,0,1,1],
-]
-              },
-              {
-                id: 'nestbox',
-                markerId: 1,
-                model: 'assets/models/habitat-nestbox.glb',
-                name: 'Budka lęgowa',
-                shortName: 'Budka lęgowa',
-                icon: '🏠',
-                category: 'natural',
-                score: 30,
-                color: '#b45309',
-                residents: ['🐦 Sikorka bogatka i modraszka', '🪶 Szpak i muchołówka'],
-                desc: 'Bezpieczne schronienie lęgowe pomaga ptakom wychować pisklęta, które zjadają tysiące gąsienic i komarów.',
-                grid: [
-                  [0,1,1,0],
-                  [1,1,1,1],
-                  [1,0,0,1],
-                  [1,0,0,1]
-                ]
-              },
-              {
-                id: 'puddle',
-                markerId: 2,
-                model: 'assets/models/habitat-puddle.glb',
-                name: 'Kałuża z błotem',
-                shortName: 'Kałuża z błotem',
-                icon: '💧',
-                category: 'natural',
-                score: 35,
-                color: '#0284c7',
-                residents: ['🕊️ Jaskółka oknówka (błoto na gniazdo!)', '🐸 Żaba trawna i ważki', '🦋 Motyle (piją minerały z błota)'],
-                desc: 'Kałuża z błotem przyciąga jaskółki, które lepią z niego gniazda, oraz służy jako wodopój dla owadów i ptaków.',
-                grid: [
-                    [1,0,1,0],
-                    [0,1,0,1],
-                    [1,1,0,0],
-                    [0,0,0,1],
-]
-              },
-              {
-                id: 'meadow',
-                markerId: 3,
-                model: 'assets/models/habitat-meadow.glb',
-                name: 'Dzika łąka kwietna',
-                shortName: 'Łąka kwietna',
-                icon: '🌼',
-                category: 'natural',
-                score: 35,
-                color: '#16a34a',
-                residents: ['🐝 Pszczoły i trzmiele', '🦋 Paź królowej i rusałki', '🦔 Jeż (poluje w wysokiej trawie)'],
-                desc: 'Niekoszona łąka zatrzymuje wilgoć w glebie, chłodzi otoczenie i karmi dziesiątki gatunków zapylaczy.',
-                grid: [
-                    [0,1,0,0],
-                    [1,0,1,1],
-                    [0,1,0,0],
-                    [0,1,1,1],
-]
-              },
-              {
-                id: 'lawn',
-                markerId: 4,
-                model: 'assets/models/habitat-lawn.glb',
-                name: 'Idealnie przystrzyżony trawnik',
-                shortName: 'Wykoszony trawnik',
-                icon: '⛳',
-                category: 'harmful',
-                score: -15,
-                color: '#84cc16',
-                residents: ['❌ Brak zapylaczy i schronień („zielona pustynia”)'],
-                desc: 'Mit obalony! Sterylny, krótko wykoszony trawnik nie ma kwiatów ani kryjówek — owady i jeże nie znajdują tam pożywienia.',
-                grid: [
-                  [1,1,1,1],
-                  [0,0,0,0],
-                  [1,1,1,1],
-                  [0,0,0,0]
-                ]
-              },
-              {
-                id: 'lamp',
-                markerId: 5,
-                model: 'assets/models/habitat-lamp.glb',
-                name: 'Lampa ogrodowa świecąca całą noc',
-                shortName: 'Lampa nocna',
-                icon: '💡',
-                category: 'harmful',
-                score: -25,
-                color: '#eab308',
-                residents: ['⚠️ Odstrasza nietoperze i dezorientuje ćmy'],
-                desc: 'Sztuczne światło w nocy oślepia i odstrasza nietoperze, przyciąga oraz wyczerpuje ćmy, a także zaburza sen ptaków.',
-                grid: [
-                    [0,0,0,1],
-                    [1,1,0,1],
-                    [1,1,0,1],
-                    [1,0,1,0],
-]
-              }
-            ];
-
-            // Animals matched to the habitats they really use in a Polish forest
-            const HABITAT_TARGETS = [
-              { id: 'tree', icon: '🪵', label: 'Stare drzewo' },
-              { id: 'nestbox', icon: '🏠', label: 'Budka lęgowa' },
-              { id: 'puddle', icon: '💧', label: 'Kałuża z błotem' },
-              { id: 'meadow', icon: '🌼', label: 'Dzika łąka' }
-            ];
-
-            const HABITAT_ANIMALS = [
-              { id: 'puszczyk', name: 'Puszczyk (sowa)', icon: '🦉', photo: 'https://upload.wikimedia.org/wikipedia/commons/5/55/Strix_aluco_3_%28Martin_Mecnarowski%29.jpg', markerId: 10, model: null, habitats: ['tree', 'nestbox'], fact: 'W dzień ukrywa się w dziupli lub budce, nocą poluje na gryzonie.', hint: 'Szuka ciemnej kryjówki wysoko nad ziemią.', grid: [[1,0,0,0],[1,1,0,1],[1,1,0,0],[1,1,0,1]] },
-              { id: 'dzieciol', name: 'Dzięcioł', icon: '🐦', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Great_spotted_woodpecker_%28Dendrocopos_major%29_male_Drenthe.jpg/960px-Great_spotted_woodpecker_%28Dendrocopos_major%29_male_Drenthe.jpg', markerId: 11, model: 'assets/models/dzieciol.glb', habitats: ['tree'], fact: 'Kuje dziuple w pniach — potem korzystają z nich inne zwierzęta.', hint: 'To ptak, który pracuje na pniu, nie na łące.', grid: [[1,1,1,0],[0,1,0,1],[1,0,0,1],[0,0,0,1]] },
-              { id: 'nietoperz', name: 'Nietoperz', icon: '🦇', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Plecotus_auritus_2013-2_%28cropped%29.jpg/960px-Plecotus_auritus_2013-2_%28cropped%29.jpg', markerId: 12, model: 'assets/models/nietoperz.glb', habitats: ['tree'], fact: 'Na dzień wisi w dziupli lub szczelinie kory.', hint: 'Potrzebuje ciemnej szczeliny, nie otwartej przestrzeni.', grid: [[1,0,0,0],[0,0,1,0],[1,1,1,0],[1,0,1,0]] },
-              { id: 'jelonek', name: 'Jelonek rogacz (chrząszcz)', icon: '🪲', photo: 'https://upload.wikimedia.org/wikipedia/commons/0/09/Lucanus_cervus.jpg', markerId: 13, model: null, habitats: ['tree'], fact: 'Jego larwy rozwijają się w próchnie martwego drzewa.', hint: 'Jego domem jest martwe drewno.', grid: [[1,0,0,0],[0,0,0,1],[1,1,1,0],[1,1,0,1]] },
-              { id: 'sikorka', name: 'Sikorka', icon: '🐤', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Eurasian_blue_tit_Lancashire.jpg/960px-Eurasian_blue_tit_Lancashire.jpg', markerId: 14, model: 'assets/models/sikorka.glb', habitats: ['nestbox'], fact: 'Chętnie zakłada gniazdo w budce lęgowej i zjada tysiące gąsienic.', hint: 'Potrzebuje gotowego, bezpiecznego lokum dla piskląt.', grid: [[1,1,0,0],[1,0,1,0],[1,0,0,0],[0,0,1,1]] },
-              { id: 'szpak', name: 'Szpak', icon: '🐦‍⬛', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Common_starling_%28Sturnus_vulgaris%29_breeding_male_Marken.jpg/960px-Common_starling_%28Sturnus_vulgaris%29_breeding_male_Marken.jpg', markerId: 15, model: null, habitats: ['nestbox'], fact: 'Zamieszkuje budki i dziuple, często blisko ludzi.', hint: 'Też korzysta z gotowej budki.', grid: [[0,1,1,1],[1,1,0,0],[0,1,1,1],[0,1,0,0]] },
-              { id: 'jaskolka', name: 'Jaskółka', icon: '🕊️', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Rauchschwalbe_Hirundo_rustica.jpg/960px-Rauchschwalbe_Hirundo_rustica.jpg', markerId: 16, model: null, habitats: ['puddle'], fact: 'Lepi gniazdo z błota wygrzebanego z kałuży.', hint: 'Potrzebuje błota jako budulca.', grid: [[1,1,1,0],[1,0,0,1],[0,1,0,0],[1,1,0,0]] },
-              { id: 'zaba', name: 'Żaba', icon: '🐸', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/European_Common_Frog_Rana_temporaria.jpg/960px-European_Common_Frog_Rana_temporaria.jpg', markerId: 17, model: 'assets/models/zaba.glb', habitats: ['puddle', 'meadow'], fact: 'Składa skrzek w wodzie, a poluje w wilgotnej trawie.', hint: 'Woda i wilgotna trawa — nie pień drzewa.', grid: [[0,1,1,0],[0,0,1,1],[0,0,1,1],[0,0,1,0]] },
-              { id: 'wazka', name: 'Ważka', icon: '🪰', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Red_grasshawk_%28Neurothemis_fluctuans%29_male_Phuket_2.jpg/960px-Red_grasshawk_%28Neurothemis_fluctuans%29_male_Phuket_2.jpg', markerId: 18, model: 'assets/models/wazka.glb', habitats: ['puddle'], fact: 'Jej larwy żyją w wodzie, dorosłe polują nad kałużą.', hint: 'Całe życie związane z wodą.', grid: [[1,1,0,1],[1,0,1,0],[0,1,1,1],[1,0,0,0]] },
-              { id: 'motyle', name: 'Motyle', icon: '🦋', photo: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Fesoj_-_Papilio_machaon_%28by%29.jpg', markerId: 19, model: 'assets/models/motyle.glb', habitats: ['meadow', 'puddle'], fact: 'Nektar zbierają na łące, a minerały piją z błota.', hint: 'Kwiaty i wilgotne podłoże.', grid: [[0,1,0,0],[0,0,1,1],[1,0,1,1],[0,1,1,0]] },
-              { id: 'pszczoly', name: 'Pszczoły', icon: '🐝', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Apis_mellifera_Western_honey_bee.jpg/960px-Apis_mellifera_Western_honey_bee.jpg', markerId: 20, model: null, habitats: ['meadow'], fact: 'Zbierają nektar i pyłek z kwiatów łąki.', hint: 'Szukają kwiatów, nie dziupli.', grid: [[0,1,0,1],[0,1,1,1],[1,1,1,0],[0,0,1,0]] },
-              { id: 'trzmiele', name: 'Trzmiele', icon: '🐝', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Bombus_lapidarius_-_Melilotus_officinalis_-_Tallinn.jpg/960px-Bombus_lapidarius_-_Melilotus_officinalis_-_Tallinn.jpg', markerId: 21, model: null, habitats: ['meadow'], fact: 'Zapylają kwiaty nawet w chłodne dni.', hint: 'Też potrzebują kwitnącej łąki.', grid: [[1,1,0,0],[1,0,1,1],[1,0,0,0],[1,0,1,1]] },
-              { id: 'jez', name: 'Jeż', icon: '🦔', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Erinaceus_europaeus_LC0119.jpg/960px-Erinaceus_europaeus_LC0119.jpg', markerId: 22, model: null, habitats: ['meadow'], fact: 'Poluje w wysokiej trawie na owady i ślimaki.', hint: 'Szuka gęstej trawy i kryjówki na ziemi.', grid: [[1,1,0,0],[0,1,1,0],[0,0,0,1],[0,0,1,1]] }
-            ];
-
-            // Generate deterministic AR.js .patt Blob URL from 4x4 grid so markery.html matches 100%
-            function createPatternBlobUrl(grid) {
-              const size = 16;
-              const cell = 4; // 4x4 grid -> 16x16 pixels
-              const rotate90 = (g) => {
-                const res = Array.from({ length: 4 }, () => Array(4).fill(0));
-                for (let r = 0; r < 4; r++) {
-                  for (let c = 0; c < 4; c++) {
-                    res[c][3 - r] = g[r][c];
-                  }
+                {
+                    id: 'tree',
+                    name: 'Stare spróchniałe drzewo',
+                    icon: '🪵',
+                    category: 'natural',
+                    score: 35,
+                    residents: ['🦉 Puszczyk i dzięcioł (dziuple)', '🦇 Nietoperze (kryjówka dzienna)', '🪲 Jelonek rogacz (larwy w próchnie)'],
+                    desc: 'Stare, martwe drewno tętni życiem! Dziuple i szczeliny kory to bezcenny dom dla ptaków, nietoperzy i pożytecznych chrząszczy.',
+                },
+                {
+                    id: 'nestbox',
+                    name: 'Budka lęgowa',
+                    icon: '🏠',
+                    category: 'natural',
+                    score: 30,
+                    residents: ['🐦 Sikorka bogatka i modraszka', '🪶 Szpak i muchołówka'],
+                    desc: 'Bezpieczne schronienie lęgowe pomaga ptakom wychować pisklęta, które zjadają tysiące gąsienic i komarów.',
+                },
+                {
+                    id: 'puddle',
+                    name: 'Kałuża z błotem',
+                    icon: '💧',
+                    category: 'natural',
+                    score: 35,
+                    residents: ['🕊️ Jaskółka oknówka (błoto na gniazdo!)', '🐸 Żaba trawna i ważki', '🦋 Motyle (piją minerały z błota)'],
+                    desc: 'Kałuża z błotem przyciąga jaskółki, które lepią z niego gniazda, oraz służy jako wodopój dla owadów i ptaków.',
+                },
+                {
+                    id: 'meadow',
+                    name: 'Dzika łąka kwietna',
+                    icon: '🌼',
+                    category: 'natural',
+                    score: 35,
+                    residents: ['🐝 Pszczoły i trzmiele', '🦋 Paź królowej i rusałki', '🦔 Jeż (poluje w wysokiej trawie)'],
+                    desc: 'Niekoszona łąka zatrzymuje wilgoć w glebie, chłodzi otoczenie i karmi dziesiątki gatunków zapylaczy.',
+                },
+                {
+                    id: 'lawn',
+                    name: 'Idealnie przystrzyżony trawnik',
+                    icon: '⛳',
+                    category: 'harmful',
+                    score: -15,
+                    residents: ['❌ Brak zapylaczy i schronień („zielona pustynia”)'],
+                    desc: 'Mit obalony! Sterylny, krótko wykoszony trawnik nie ma kwiatów ani kryjówek — owady i jeże nie znajdują tam pożywienia.',
+                },
+                {
+                    id: 'lamp',
+                    name: 'Lampa ogrodowa świecąca całą noc',
+                    icon: '💡',
+                    category: 'harmful',
+                    score: -25,
+                    residents: ['⚠️ Odstrasza nietoperze i dezorientuje ćmy'],
+                    desc: 'Sztuczne światło w nocy oślepia i odstrasza nietoperze, przyciąga oraz wyczerpuje ćmy, a także zaburza sen ptaków.',
                 }
-                return res;
-              };
+            ];
 
-              const rotations = [grid];
-              for (let i = 1; i < 4; i++) {
-                rotations.push(rotate90(rotations[i - 1]));
-              }
-
-              const blocks = rotations.map((rotGrid) => {
-                // 3 channels (R, G, B), each 16x16 values (0 = black, 255 = white)
-                const channelLines = [];
-                for (let r = 0; r < size; r++) {
-                  const rowVals = [];
-                  for (let c = 0; c < size; c++) {
-                    const bit = rotGrid[Math.floor(r / cell)][Math.floor(c / cell)];
-                    rowVals.push(bit === 1 ? '  0' : '255');
-                  }
-                  channelLines.push(rowVals.join(' '));
-                }
-                const singleChannel = channelLines.join('\n');
-                return `${singleChannel}\n${singleChannel}\n${singleChannel}`;
-              });
-
-              const pattContent = blocks.join('\n\n') + '\n';
-              const blob = new Blob([pattContent], { type: 'text/plain' });
-              return URL.createObjectURL(blob);
-            }
-
-            // Evaluate any 1..3 selected elements (from either WebAR markers or 3-slot sandbox)
             function evaluateEcosystem(selectedIds) {
-              const selected = selectedIds
-                .map(id => ECOSYSTEM_ELEMENTS.find(el => el.id === id))
-                .filter(Boolean);
+                const selected = selectedIds.map(id => ECOSYSTEM_ELEMENTS.find(el => el.id === id)).filter(Boolean);
+                if (selected.length === 0) return null;
 
-              if (selected.length === 0) {
-                return null;
-              }
+                const hasTree = selectedIds.includes('tree');
+                const hasNestbox = selectedIds.includes('nestbox');
+                const hasPuddle = selectedIds.includes('puddle');
+                const hasMeadow = selectedIds.includes('meadow');
+                const hasLawn = selectedIds.includes('lawn');
+                const hasLamp = selectedIds.includes('lamp');
 
-              const hasTree = selectedIds.includes('tree');
-              const hasNestbox = selectedIds.includes('nestbox');
-              const hasPuddle = selectedIds.includes('puddle');
-              const hasMeadow = selectedIds.includes('meadow');
-              const hasLawn = selectedIds.includes('lawn');
-              const hasLamp = selectedIds.includes('lamp');
+                let totalScore = selected.reduce((acc, item) => acc + item.score, 0);
+                const interactions = [];
 
-              let totalScore = selected.reduce((acc, item) => acc + item.score, 0);
-              const interactions = [];
+                if (hasLamp && (hasTree || hasNestbox)) {
+                    interactions.push({
+                        type: 'conflict',
+                        text: '💡❌🪵 Sztuczne światło lampy świecącej całą noc odstraszyło nietoperze i ćmy, mimo że miały kryjówkę w drzewie/budce!'
+                    });
+                }
+                if (hasLamp && hasMeadow) {
+                    interactions.push({
+                        type: 'conflict',
+                        text: '💡❌🌼 Nocna lampa zaburza rytm dobowy owadów zapylających na łące kwietnej.'
+                    });
+                }
+                if (hasPuddle && (hasNestbox || hasTree)) {
+                    totalScore += 15;
+                    interactions.push({
+                        type: 'synergy',
+                        text: '💧✨🏠 Synergia! Kałuża z błotem dostarcza materiału jaskółkom na gniazda, a pobliskie drzewa/budki chronią pisklęta!'
+                    });
+                }
+                if (hasMeadow && hasPuddle) {
+                    totalScore += 15;
+                    interactions.push({
+                        type: 'synergy',
+                        text: '🌼✨💧 Synergia! Motyle i pszczoły z łąki kwietnej korzystają z wodopoju i minerałów w kałuży z błotem!'
+                    });
+                }
+                if (hasTree && hasMeadow) {
+                    totalScore += 15;
+                    interactions.push({
+                        type: 'synergy',
+                        text: '🪵✨🌼 Synergia! Jeże ukrywają się wśród korzeni starego drzewa i polują nocą na łące kwietnej!'
+                    });
+                }
+                if (hasLawn) {
+                    interactions.push({
+                        type: 'conflict',
+                        text: '⛳⚠️ Idealnie przystrzyżony trawnik działa jak „zielona pustynia” — brak kwiatów i kryjówek ogranicza bioróżnorodność.'
+                    });
+                }
 
-              // Specific causal synergy & conflict rules (directly from Image #3!)
-              if (hasLamp && (hasTree || hasNestbox)) {
-                interactions.push({
-                  type: 'conflict',
-                  text: '💡❌🪵 Sztuczne światło lampy świecącej całą noc odstraszyło nietoperze i ćmy, mimo że miały kryjówkę w drzewie/budce!'
-                });
-              }
-              if (hasLamp && hasMeadow) {
-                interactions.push({
-                  type: 'conflict',
-                  text: '💡❌🌼 Nocna lampa zaburza rytm dobowy owadów zapylających na łące kwietnej.'
-                });
-              }
-              if (hasPuddle && (hasNestbox || hasTree)) {
-                totalScore += 15;
-                interactions.push({
-                  type: 'synergy',
-                  text: '💧✨🏠 Synergia! Kałuża z błotem dostarcza materiału jaskółkom na gniazda, a pobliskie drzewa/budki chronią pisklęta!'
-                });
-              }
-              if (hasMeadow && hasPuddle) {
-                totalScore += 15;
-                interactions.push({
-                  type: 'synergy',
-                  text: '🌼✨💧 Synergia! Motyle i pszczoły z łąki kwietnej korzystają z wodopoju i minerałów w kałuży z błotem!'
-                });
-              }
-              if (hasTree && hasMeadow) {
-                totalScore += 15;
-                interactions.push({
-                  type: 'synergy',
-                  text: '🪵✨🌼 Synergia! Jeże ukrywają się wśród korzeni starego drzewa i polują nocą na łące kwietnej!'
-                });
-              }
-              if (hasLawn) {
-                interactions.push({
-                  type: 'conflict',
-                  text: '⛳⚠️ Idealnie przystrzyżony trawnik działa jak „zielona pustynia” — brak kwiatów i kryjówek ogranicza bioróżnorodność.'
-                });
-              }
+                const naturalCount = selected.filter(s => s.category === 'natural').length;
+                const isPerfect = selected.length === 3 && naturalCount === 3 && !hasLawn && !hasLamp;
 
-              const naturalCount = selected.filter(s => s.category === 'natural').length;
-              const isPerfect = selected.length === 3 && naturalCount === 3 && !hasLawn && !hasLamp;
+                if (isPerfect) {
+                    totalScore = 100;
+                } else {
+                    totalScore = Math.max(0, Math.min(95, totalScore));
+                }
 
-              if (isPerfect) {
-                totalScore = 100;
-              } else {
-                totalScore = Math.max(0, Math.min(95, totalScore));
-              }
-
-              return {
-                selected,
-                totalScore,
-                isPerfect,
-                interactions
-              };
+                return { selected, totalScore, isPerfect, interactions };
             }
 
             function App() {
-              const [mode, setMode] = useState('simulator'); // 'simulator' | 'webar'
-              const [slots, setSlots] = useState([null, null, null]);
-              const [report, setReport] = useState(null);
-              const [cameraStatus, setCameraStatus] = useState('idle'); // 'idle' | 'checking' | 'ready' | 'error'
-              const [cameraErrorMsg, setCameraErrorMsg] = useState('');
-              const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
-              const [arDiag, setArDiag] = useState(null);
-              const [detectedMarkers, setDetectedMarkers] = useState([]);
-              const [adjacentPairs, setAdjacentPairs] = useState([]);
-              const [patternUrls, setPatternUrls] = useState({});
-              const [animalPatternUrls, setAnimalPatternUrls] = useState({});
-              const [visibleAnimals, setVisibleAnimals] = useState({});
-              const [matchSelected, setMatchSelected] = useState(null);
-              const [matches, setMatches] = useState({});
-              const [matchMsg, setMatchMsg] = useState(null);
+                const [slots, setSlots] = useState([null, null, null]);
+                const [report, setReport] = useState(null);
 
-              const sceneContainerRef = useRef(null);
-
-              // Generate .patt URLs once on mount
-              useEffect(() => {
-                const urls = {};
-                ECOSYSTEM_ELEMENTS.forEach((el) => {
-                  urls[el.id] = createPatternBlobUrl(el.grid);
-                });
-                setPatternUrls(urls);
-                const animalUrls = {};
-                HABITAT_ANIMALS.forEach((animal) => {
-                  animalUrls[animal.id] = createPatternBlobUrl(animal.grid);
-                });
-                setAnimalPatternUrls(animalUrls);
-                return () => {
-                  Object.values(urls).forEach((u) => URL.revokeObjectURL(u));
-                  Object.values(animalUrls).forEach((u) => URL.revokeObjectURL(u));
-                };
-              }, []);
-
-              // Check camera availability safely before starting WebAR mode
-              const startWebAR = async () => {
-                setShowPermissionPrompt(false);
-                setCameraStatus('checking');
-                setCameraErrorMsg('');
-
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                  setCameraStatus('error');
-                  setCameraErrorMsg('Twoja przeglądarka nie obsługuje dostępu do kamery (wymagane połączenie HTTPS lub localhost). Użyj Trybu Symulacji poniżej.');
-                  return;
-                }
-
-                try {
-                  const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
-                  });
-                  // Release probe stream so AR.js can acquire the camera cleanly
-                  stream.getTracks().forEach(track => track.stop());
-                  // Give Android/iOS a moment to free the camera before AR.js opens it again
-                  await new Promise((resolve) => setTimeout(resolve, 700));
-                  setCameraStatus('ready');
-                  setMode('webar');
-                } catch (err) {
-                  setCameraStatus('error');
-                  const denied = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
-                  setCameraErrorMsg(
-                    denied
-                      ? 'Kamera jest zablokowana. Kliknij ikonę kłódki przy adresie strony, włącz uprawnienie „Kamera” i odśwież stronę. Do tego czasu działa Tryb Symulacji.'
-                      : 'Nie udało się włączyć kamery (brak dostępu lub kamera zajęta przez inną aplikację). Możesz przetestować pełną mechanikę ekosystemu w Trybie Symulacji!'
-                  );
-                }
-              };
-
-              // Spatial proximity & multi-marker tracking loop when WebAR is active
-              useEffect(() => {
-                if (mode !== 'webar' || cameraStatus !== 'ready') return;
-
-                let hitStreak = {};
-
-                const interval = setInterval(() => {
-                  const visible = [];
-                  const nextStreak = {};
-                  ECOSYSTEM_ELEMENTS.forEach((el) => {
-                    const markerEl = document.getElementById(`ar-marker-${el.id}`);
-                    if (markerEl && markerEl.object3D && markerEl.object3D.visible) {
-                      // Require 2 consecutive frames so a single false blip cannot flip the slots
-                      const streak = (hitStreak[el.id] || 0) + 1;
-                      nextStreak[el.id] = streak;
-                      if (streak >= 2) {
-                        const pos = markerEl.object3D.position;
-                        visible.push({
-                          id: el.id,
-                          name: el.shortName,
-                          icon: el.icon,
-                          x: pos.x,
-                          y: pos.y,
-                          z: pos.z
-                        });
-                      }
+                const handleQuickAdd = (elementId) => {
+                    if (slots.includes(elementId)) {
+                        setSlots(slots.map(s => (s === elementId ? null : s)));
+                        setReport(null);
+                        return;
                     }
-                  });
-                  hitStreak = nextStreak;
-
-                  setDetectedMarkers(visible);
-
-                  // Track which animal markers are on screen (their 3D models load lazily)
-                  const seenAnimals = {};
-                  HABITAT_ANIMALS.forEach((animal) => {
-                    const markerEl = document.getElementById(`ar-animal-${animal.id}`);
-                    if (markerEl && markerEl.object3D && markerEl.object3D.visible) {
-                      seenAnimals[animal.id] = true;
+                    const emptyIdx = slots.indexOf(null);
+                    if (emptyIdx !== -1) {
+                        const next = [...slots];
+                        next[emptyIdx] = elementId;
+                        setSlots(next);
+                        setReport(null);
+                    } else {
+                        const next = [...slots];
+                        next[2] = elementId;
+                        setSlots(next);
+                        setReport(null);
                     }
-                  });
-                  setVisibleAnimals(seenAnimals);
-
-                  // Compute pairwise Euclidean distances in 3D AR space
-                  const pairs = [];
-                  for (let i = 0; i < visible.length; i++) {
-                    for (let j = i + 1; j < visible.length; j++) {
-                      const a = visible[i];
-                      const b = visible[j];
-                      const dist = Math.sqrt(
-                        Math.pow(a.x - b.x, 2) +
-                        Math.pow(a.y - b.y, 2) +
-                        Math.pow(a.z - b.z, 2)
-                      );
-                      // Threshold ~2.4 AR world units = cards placed side by side
-                      if (dist < 2.4) {
-                        pairs.push({
-                          a,
-                          b,
-                          dist: dist.toFixed(2)
-                        });
-                      }
-                    }
-                  }
-                  setAdjacentPairs(pairs);
-
-                  // Automatically sync detected markers (up to 3) into ecosystem slots & evaluate
-                  if (visible.length > 0) {
-                    const nextSlots = [
-                      visible[0]?.id || null,
-                      visible[1]?.id || null,
-                      visible[2]?.id || null
-                    ];
-                    setSlots(nextSlots);
-                    const evalRes = evaluateEcosystem(nextSlots.filter(Boolean));
-                    setReport(evalRes);
-                    if (evalRes?.isPerfect) {
-                      try {
-                        const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
-                        saved['zadanie-3'] = true;
-                        localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
-                      } catch (e) {}
-                    }
-                  }
-                }, 350);
-
-                return () => clearInterval(interval);
-              }, [mode, cameraStatus]);
-
-              // Lock page scrolling while the fullscreen AR view is open
-              useEffect(() => {
-                const locked = mode === 'webar' && cameraStatus === 'ready';
-                document.body.style.overflow = locked ? 'hidden' : '';
-                // AR.js paints the camera feed as <video id="arjs-video"> behind the page (z-index:-2),
-                // so the page background has to be transparent while AR is on.
-                document.documentElement.classList.toggle('arjs-active', locked);
-                document.body.classList.toggle('arjs-active', locked);
-                return () => {
-                  document.body.style.overflow = '';
-                  document.documentElement.classList.remove('arjs-active');
-                  document.body.classList.remove('arjs-active');
-                };
-              }, [mode, cameraStatus]);
-
-              // Make sure A-Frame fills the fullscreen viewport and actually receives camera frames
-              useEffect(() => {
-                if (mode !== 'webar' || cameraStatus !== 'ready') return;
-
-                let cancelled = false;
-                const resizeScene = () => {
-                  const scene = sceneContainerRef.current && sceneContainerRef.current.querySelector('a-scene');
-                  if (scene && typeof scene.resize === 'function') {
-                    try { scene.resize(); } catch (e) {}
-                  }
                 };
 
-                const timerResize = setTimeout(resizeScene, 400);
-                const timerResize2 = setTimeout(resizeScene, 1500);
-
-                const checkVideo = () => {
-                  if (cancelled) return;
-                  // AR.js mounts the camera feed as <video id="arjs-video"> directly in <body>
-                  const video = document.querySelector('#arjs-video');
-                  const hasFrames = video && video.videoWidth > 0 && video.readyState >= 2;
-                  setArDiag(hasFrames ? null : 'Kamera nie przekazuje obrazu. Sprawdź uprawnienie „Kamera” dla tej strony (ikona kłódki przy adresie) i wciśnij „Spróbuj ponownie”.');
-                };
-                const timerCheck = setTimeout(checkVideo, 6000);
-
-                return () => {
-                  cancelled = true;
-                  clearTimeout(timerResize);
-                  clearTimeout(timerResize2);
-                  clearTimeout(timerCheck);
-                  // AR.js mounts <video id="arjs-video"> directly in document.body — stop and remove it
-                  document.querySelectorAll('#arjs-video').forEach((videoEl) => {
-                    if (videoEl.srcObject && videoEl.srcObject.getTracks) {
-                      videoEl.srcObject.getTracks().forEach((track) => track.stop());
-                      videoEl.srcObject = null;
+                const handlePlaceInSlot = (slotIdx, elementId) => {
+                    const next = [...slots];
+                    const existingIdx = next.indexOf(elementId);
+                    if (existingIdx !== -1 && existingIdx !== slotIdx) {
+                        next[existingIdx] = null;
                     }
-                    videoEl.remove();
-                  });
+                    next[slotIdx] = elementId;
+                    setSlots(next);
+                    setReport(null);
                 };
-              }, [mode, cameraStatus]);
 
-              // Simulator slot handlers
-              const handlePlaceInSlot = (slotIdx, elementId) => {                const next = [...slots];
-                // Prevent duplicate in another slot
-                const existingIdx = next.indexOf(elementId);
-                if (existingIdx !== -1 && existingIdx !== slotIdx) {
-                  next[existingIdx] = null;
-                }
-                next[slotIdx] = elementId;
-                setSlots(next);
-                setReport(null);
-              };
+                const handleCheckResidents = () => {
+                    const activeIds = slots.filter(Boolean);
+                    const res = evaluateEcosystem(activeIds);
+                    setReport(res);
+                    if (res && res.isPerfect) {
+                        try {
+                            const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
+                            saved['zadanie-3'] = true;
+                            localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
+                        } catch (e) {}
+                    }
+                };
 
-              const handleQuickAdd = (elementId) => {
-                if (slots.includes(elementId)) {
-                  setSlots(slots.map(s => (s === elementId ? null : s)));
-                  setReport(null);
-                  return;
-                }
-                const emptyIdx = slots.indexOf(null);
-                if (emptyIdx !== -1) {
-                  handlePlaceInSlot(emptyIdx, elementId);
-                } else {
-                  handlePlaceInSlot(2, elementId);
-                }
-              };
+                const handleResetSlots = () => {
+                    setSlots([null, null, null]);
+                    setReport(null);
+                };
 
-              const handleCheckResidents = () => {
-                const activeIds = slots.filter(Boolean);
-                const res = evaluateEcosystem(activeIds);
-                setReport(res);
-                if (res && res.isPerfect) {
-                  try {
-                    const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
-                    saved['zadanie-3'] = true;
-                    localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
-                  } catch (e) {}
-                }
-              };
+                return (
+                    <div className="min-h-screen flex flex-col">
+                        <header className="bg-white border-b border-emerald-200 sticky top-0 z-40">
+                            <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
+                                <a href="index.html" aria-label="Powrót do menu" className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-base shrink-0 transition">
+                                    ←
+                                </a>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] font-extrabold uppercase tracking-wide text-emerald-700 leading-none mb-1">Zadanie 3 • Karta #3</p>
+                                    <h1 className="text-sm sm:text-lg font-black text-slate-900 truncate leading-tight">„Zbuduj Idealny Ekosystem” (Sandbox Przyrodniczy)</h1>
+                                </div>
+                            </div>
+                        </header>
 
-              const handleResetSlots = () => {
-                setSlots([null, null, null]);
-                setReport(null);
-              };
+                        <main className="flex-1 max-w-6xl w-full mx-auto px-3 py-4 sm:px-4 sm:py-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                                <div className="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border-2 border-emerald-200 shadow-sm">
+                                    <h2 className="text-xl font-black text-slate-900 mb-1">Elementy środowiska</h2>
+                                    <p className="text-xs text-slate-500 mb-4">Kliknij element, aby dodać go do wolnego slotu na swojej działce przyrodniczej.</p>
 
-              // Match an animal to its habitat
-              const handleAssignHabitat = (targetId) => {
-                if (!matchSelected) return;
-                const animal = HABITAT_ANIMALS.find((a) => a.id === matchSelected);
-                if (!animal) return;
+                                    <div className="grid grid-cols-1 gap-2.5">
+                                        {ECOSYSTEM_ELEMENTS.map((el) => {
+                                            const isSelected = slots.includes(el.id);
+                                            return (
+                                                <div
+                                                    key={el.id}
+                                                    onClick={() => handleQuickAdd(el.id)}
+                                                    className={`p-3.5 rounded-2xl border-2 transition cursor-pointer select-none flex items-center justify-between ${
+                                                        isSelected
+                                                            ? 'bg-emerald-600 text-white border-emerald-700 shadow-md'
+                                                            : 'bg-emerald-50/40 hover:bg-emerald-50 border-emerald-200 hover:border-emerald-400'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-3xl shrink-0">{el.icon}</span>
+                                                        <div>
+                                                            <p className="text-sm font-black leading-tight">{el.name}</p>
+                                                            <p className={`text-[11px] font-semibold ${isSelected ? 'text-emerald-100' : 'text-slate-500'}`}>
+                                                                {el.category === 'natural' ? 'Składnik naturalny' : 'Element antropogeniczny'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className={`text-xs font-extrabold px-2.5 py-1 rounded-full ${isSelected ? 'bg-white text-emerald-800' : 'bg-white text-slate-600 border border-slate-200'}`}>
+                                                        {isSelected ? 'W slocie' : '+ Dodaj'}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
 
-                if (animal.habitats.includes(targetId)) {
-                  const next = { ...matches, [animal.id]: targetId };
-                  setMatches(next);
-                  setMatchSelected(null);
-                  setMatchMsg({ ok: true, text: `${animal.name}: ${animal.fact}` });
-                  if (Object.keys(next).length === HABITAT_ANIMALS.length) {
-                    try {
-                      const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
-                      saved['zadanie-3'] = true;
-                      localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
-                    } catch (e) {}
-                  }
-                } else {
-                  setMatchMsg({ ok: false, text: `${animal.name} nie mieszka tutaj. ${animal.hint}` });
-                }
-              };
+                                <div className="lg:col-span-7 flex flex-col gap-6">
+                                    <div className="bg-gradient-to-b from-lime-100 via-emerald-100 to-emerald-200 rounded-3xl p-6 border-2 border-emerald-300 shadow-sm">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div>
+                                                <span className="px-3 py-1 rounded-full bg-white/80 text-emerald-900 text-xs font-extrabold">🌳 Wycinek łąki i skraju lasu (3 sloty)</span>
+                                                <h2 className="text-xl font-black text-slate-900 mt-1.5">Ułóż 3 elementy obok siebie</h2>
+                                            </div>
+                                            <button onClick={handleResetSlots} className="px-3 py-1.5 rounded-xl bg-white/80 hover:bg-white text-slate-700 font-bold text-xs transition">
+                                                Wyczyść sloty
+                                            </button>
+                                        </div>
 
-              return (
-                <div className="min-h-screen flex flex-col">
-                  {/* Top Navigation */}
-                  <header className="app-header bg-white border-b border-emerald-200 sticky top-0 z-40">
-                    <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
-                      <a
-                        href="index.html"
-                        aria-label="Powrót do menu"
-                        className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-base shrink-0 transition"
-                      >
-                        ←
-                      </a>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-5">
+                                            {slots.map((slotElementId, idx) => {
+                                                const el = ECOSYSTEM_ELEMENTS.find(item => item.id === slotElementId);
+                                                return (
+                                                    <div
+                                                        key={idx}
+                                                        onClick={() => el && handlePlaceInSlot(idx, null)}
+                                                        className={`min-h-[155px] rounded-2xl p-4 border-3 border-dashed flex flex-col items-center justify-center text-center transition ${
+                                                            el ? 'bg-white border-emerald-500 shadow-md cursor-pointer hover:bg-rose-50' : 'bg-white/60 border-emerald-400 text-emerald-900/70'
+                                                        }`}
+                                                    >
+                                                        {el ? (
+                                                            <>
+                                                                <span className="text-5xl mb-2">{el.icon}</span>
+                                                                <p className="text-sm font-black text-slate-900 leading-tight">{el.name}</p>
+                                                                <span className="mt-2 text-[10px] font-bold text-slate-400">Kliknij, aby usunąć</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <span className="text-2xl mb-1 opacity-60">➕</span>
+                                                                <p className="text-xs font-extrabold">Slot {idx + 1}</p>
+                                                                <p className="text-[11px]">Wybierz element z listy</p>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
 
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-extrabold uppercase tracking-wide text-emerald-700 leading-none mb-1">
-                          Zadanie 3 • Karta #3 • WebAR
-                        </p>
-                        <h1 className="text-sm sm:text-lg font-black text-slate-900 truncate leading-tight">
-                          „Zbuduj Idealny Ekosystem”
-                        </h1>
-                      </div>
+                                        <button
+                                            onClick={handleCheckResidents}
+                                            disabled={slots.filter(Boolean).length === 0}
+                                            className={`w-full py-4 px-6 rounded-2xl font-black text-base shadow-lg transition flex items-center justify-center gap-2 ${
+                                                slots.filter(Boolean).length > 0 ? 'bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer' : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                                            }`}
+                                        >
+                                            <span>🔍</span>
+                                            <span>Sprawdź, kto tu zamieszka</span>
+                                        </button>
+                                    </div>
 
-                      <a
-                        href="markery.html"
-                        aria-label="Generator Markerów AR"
-                        className="inline-flex items-center justify-center gap-2 w-10 h-10 sm:w-auto sm:h-auto sm:px-4 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-sm shrink-0 transition"
-                      >
-                        <span>🖨️</span>
-                        <span className="hidden sm:inline">Generator Markerów AR</span>
-                      </a>
+                                    {report && (
+                                        <div className={`rounded-3xl p-6 border-2 shadow-lg transition-all animate-pop ${report.isPerfect ? 'bg-gradient-to-br from-emerald-600 to-teal-700 text-white border-emerald-300' : 'bg-white text-slate-800 border-emerald-200'}`}>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div>
+                                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-1 ${report.isPerfect ? 'bg-amber-300 text-emerald-950' : 'bg-emerald-100 text-emerald-800'}`}>
+                                                        {report.isPerfect ? '🏆 PERFEKCYJNY EKOSYSTEM!' : '📊 Wynik analizy przyrodniczej'}
+                                                    </span>
+                                                    <h3 className="text-xl sm:text-2xl font-black">Równowaga przyrodnicza: {report.totalScore} / 100 pkt</h3>
+                                                </div>
+                                            </div>
+
+                                            {report.interactions.length > 0 && (
+                                                <div className="space-y-2 mb-4">
+                                                    {report.interactions.map((inter, i) => (
+                                                        <div key={i} className={`p-3 rounded-2xl text-xs sm:text-sm font-bold ${report.isPerfect ? 'bg-white/15 text-white' : inter.type === 'synergy' ? 'bg-emerald-50 text-emerald-900 border border-emerald-200' : 'bg-rose-50 text-rose-900 border border-rose-200'}`}>
+                                                            {inter.text}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <div className="space-y-3">
+                                                {report.selected.map((el) => (
+                                                    <div key={el.id} className={`p-4 rounded-2xl ${report.isPerfect ? 'bg-white/10 border border-white/20' : 'bg-slate-50 border border-slate-200'}`}>
+                                                        <div className="flex items-center gap-2 font-black text-sm mb-1">
+                                                            <span className="text-xl">{el.icon}</span>
+                                                            <span>{el.name}</span>
+                                                        </div>
+                                                        <p className={`text-xs mb-2 ${report.isPerfect ? 'text-emerald-100' : 'text-slate-600'}`}>{el.desc}</p>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {el.residents.map((res, rIdx) => (
+                                                                <span key={rIdx} className={`px-2.5 py-1 rounded-lg text-xs font-bold ${report.isPerfect ? 'bg-emerald-950/40 text-emerald-100' : 'bg-white border border-slate-200 text-slate-800'}`}>
+                                                                    {res}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </main>
                     </div>
-                  </header>
-
-                  <main className="flex-1 max-w-6xl w-full mx-auto px-3 py-4 sm:px-4 sm:py-6">
-                    {/* Mode Switcher Bar */}
-                    <div className="bg-white rounded-3xl p-4 border-2 border-emerald-200 shadow-sm mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                      <div>
-                        <h2 className="text-base sm:text-lg font-black text-slate-900">
-                          Tryb pracy pracowni ekosystemu
-                        </h2>
-                        <p className="text-xs text-slate-500">
-                          Użyj kamery i markerów AR.js z karty lub przetestuj działanie w interaktywnym symulatorze 3 slotów.
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl w-full sm:w-auto">
-                        <button
-                          onClick={() => setMode('simulator')}
-                          className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm transition ${
-                            mode === 'simulator'
-                              ? 'bg-emerald-600 text-white shadow'
-                              : 'text-slate-700 hover:bg-white/70'
-                          }`}
-                        >
-                          🧩 Tryb Symulacji (Bez kamery)
-                        </button>
-                        <button
-                          onClick={() => (cameraStatus === 'ready' ? setMode('webar') : setShowPermissionPrompt(true))}
-                          disabled={cameraStatus === 'checking'}
-                          className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm transition ${
-                            mode === 'webar'
-                              ? 'bg-emerald-600 text-white shadow'
-                              : 'text-slate-700 hover:bg-white/70'
-                          }`}
-                        >
-                          {cameraStatus === 'checking' ? '⏳ Uruchamianie...' : '📷 Kamera WebAR (AR.js)'}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Explicit camera permission request */}
-                    {showPermissionPrompt && (
-                      <div className="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div className="w-full max-w-md bg-white rounded-3xl p-6 border-2 border-emerald-300 shadow-2xl">
-                          <div className="text-4xl mb-3 text-center">📷</div>
-                          <h2 className="text-lg font-black text-slate-900 text-center mb-2">Zezwól na dostęp do kamery</h2>
-                          <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                            Tryb WebAR potrzebuje kamery, aby rozpoznać markery z karty. Obraz z kamery zostaje na Twoim telefonie — nic nie jest wysyłane ani zapisywane.
-                          </p>
-                          <ol className="text-xs text-slate-600 space-y-1.5 mb-5 list-decimal list-inside">
-                            <li>Kliknij „Zezwól na kamerę”.</li>
-                            <li>W pytaniu przeglądarki wybierz <strong>Zezwól</strong>.</li>
-                            <li>Skieruj kamerę na wydrukowane markery.</li>
-                          </ol>
-                          <div className="flex flex-col gap-2.5">
-                            <button
-                              onClick={startWebAR}
-                              className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm transition"
-                            >
-                              Zezwól na kamerę
-                            </button>
-                            <button
-                              onClick={() => setShowPermissionPrompt(false)}
-                              className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition"
-                            >
-                              Nie teraz — użyj symulacji
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Graceful Camera Error Alert */}
-                    {cameraStatus === 'error' && (
-                      <div className="mb-6 bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div className="flex items-start gap-3">
-                          <span className="text-2xl">📷</span>
-                          <div>
-                            <p className="font-extrabold text-amber-950 text-sm">
-                              Kamera WebAR niedostępna — aktywny Tryb Symulacji
-                            </p>
-                            <p className="text-xs text-amber-800 mt-0.5">{cameraErrorMsg}</p>
-                          </div>
-                        </div>
-                        <a
-                          href="markery.html"
-                          className="px-3.5 py-2 rounded-xl bg-amber-600 text-white font-bold text-xs shrink-0 hover:bg-amber-700"
-                        >
-                          Zobacz karty markerów
-                        </a>
-                      </div>
-                    )}
-
-                    {/* WEBAR CAMERA VIEW (AR.js + A-Frame) */}
-                    {mode === 'webar' && cameraStatus === 'ready' && (
-                      <section className="ar-fullscreen fixed inset-0 z-50 bg-transparent">
-                        <div className="absolute top-0 left-0 right-0 z-20 bg-emerald-950/95 backdrop-blur-md text-white px-4 py-3 flex flex-wrap items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                            <span className="text-xs sm:text-sm font-extrabold">
-                              Silnik AR.js aktywny — skieruj kamerę na markery z karty!
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs bg-white/15 px-3 py-1 rounded-full font-bold">
-                              Wykryte markery: {detectedMarkers.length}
-                            </span>
-                            <button
-                              onClick={() => setMode('simulator')}
-                              className="text-xs bg-rose-600 hover:bg-rose-700 px-3 py-1 rounded-full font-bold"
-                            >
-                              Wyłącz kamerę
-                            </button>
-                          </div>
-                        </div>
-
-                        {arDiag && (
-                          <div className="absolute top-[56px] left-0 right-0 z-20 bg-amber-400 text-amber-950 px-3 py-2 text-[11px] sm:text-xs font-bold flex items-center justify-between gap-2">
-                            <span>{arDiag}</span>
-                            <button onClick={startWebAR} className="px-3 py-1.5 rounded-lg bg-amber-950 text-amber-50 font-extrabold shrink-0">
-                              Spróbuj ponownie
-                            </button>
-                          </div>
-                        )}
-
-                        {/* A-Frame AR.js Viewport — full viewport, 1:1 with #arjs-video */}
-                        <div ref={sceneContainerRef} className="ar-viewport bg-transparent">
-                          <a-scene
-                            embedded
-                            vr-mode-ui="enabled: false"
-                            loading-screen="enabled: false"
-                            arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; maxDetectionRate: 30; patternRatio: 0.5;"
-                          >
-                            {ECOSYSTEM_ELEMENTS.map((el) => (
-                              patternUrls[el.id] && (
-                                <a-marker
-                                  key={el.id}
-                                  id={`ar-marker-${el.id}`}
-                                  type="pattern"
-                                  url={patternUrls[el.id]}
-                                  smooth="true"
-                                  smoothCount="5"
-                                  smoothTolerance="0.02"
-                                  smoothThreshold="4"
-                                >
-                                  {/* 3D model loads when the marker is visible; primitives as fallback */}
-                                  {el.model && detectedMarkers.some((m) => m.id === el.id) ? (
-                                    <a-entity gltf-model={el.model} position="0 0.1 0" scale="0.45 0.45 0.45"></a-entity>
-                                  ) : (
-                                  <a-entity position="0 0.5 0">
-                                    {el.id === 'tree' && (
-                                      <a-entity>
-                                        <a-cylinder position="0 0.4 0" radius="0.22" height="0.9" color="#78350f"></a-cylinder>
-                                        <a-sphere position="0 0.95 0" radius="0.45" color="#15803d"></a-sphere>
-                                      </a-entity>
-                                    )}
-                                    {el.id === 'nestbox' && (
-                                      <a-entity>
-                                        <a-box position="0 0.4 0" width="0.55" height="0.65" depth="0.45" color="#d97706"></a-box>
-                                        <a-cone position="0 0.88 0" radius-bottom="0.45" height="0.35" color="#92400e"></a-cone>
-                                      </a-entity>
-                                    )}
-                                    {el.id === 'puddle' && (
-                                      <a-entity>
-                                        <a-cylinder position="0 0.08 0" radius="0.65" height="0.12" color="#0284c7"></a-cylinder>
-                                        <a-torus position="0 0.14 0" rotation="90 0 0" radius="0.68" radius-tubular="0.06" color="#713f12"></a-torus>
-                                      </a-entity>
-                                    )}
-                                    {el.id === 'meadow' && (
-                                      <a-entity>
-                                        <a-box position="0 0.08 0" width="1.1" height="0.1" depth="1.1" color="#16a34a"></a-box>
-                                        <a-sphere position="-0.25 0.35 0.2" radius="0.14" color="#facc15"></a-sphere>
-                                        <a-sphere position="0.25 0.4 -0.15" radius="0.14" color="#f43f5e"></a-sphere>
-                                      </a-entity>
-                                    )}
-                                    {el.id === 'lawn' && (
-                                      <a-box position="0 0.05 0" width="1.2" height="0.06" depth="1.2" color="#84cc16"></a-box>
-                                    )}
-                                    {el.id === 'lamp' && (
-                                      <a-entity>
-                                        <a-cylinder position="0 0.4 0" radius="0.07" height="0.8" color="#334155"></a-cylinder>
-                                        <a-sphere position="0 0.9 0" radius="0.24" color="#fef08a" emissive="#facc15" emissive-intensity="0.8"></a-sphere>
-                                      </a-entity>
-                                    )}
-                                  </a-entity>
-                                  )}
-                                </a-marker>
-                              )
-                            ))}
-                            {/* Animal markers — 3D models load only when their marker is visible */}
-                            {HABITAT_ANIMALS.map((animal) =>
-                              animalPatternUrls[animal.id] ? (
-                                <a-marker
-                                  key={`animal-${animal.id}`}
-                                  id={`ar-animal-${animal.id}`}
-                                  type="pattern"
-                                  url={animalPatternUrls[animal.id]}
-                                  smooth="true"
-                                  smoothCount="5"
-                                  smoothTolerance="0.02"
-                                  smoothThreshold="4"
-                                >
-                                  <a-entity position="0 0.1 0">
-                                    {animal.model && visibleAnimals[animal.id] ? (
-                                      <a-entity gltf-model={animal.model} position="0 0.1 0" scale="0.5 0.5 0.5"></a-entity>
-                                    ) : (
-                                      <a-entity>
-                                        <a-sphere position="0 0.35 0" radius="0.2" color="#b45309"></a-sphere>
-                                        <a-sphere position="0 0.58 0" radius="0.12" color="#78350f"></a-sphere>
-                                        <a-text value={animal.name} position="0 0.9 0" align="center" scale="0.55 0.55 0.55" color="#065f46"></a-text>
-                                      </a-entity>
-                                    )}
-                                  </a-entity>
-                                </a-marker>
-                              ) : null
-                            )}
-
-                            <a-entity camera look-controls="enabled: false" wasd-controls="enabled: false"></a-entity>
-                          </a-scene>
-
-                          {/* Live Spatial Proximity Overlay */}
-                          <div className="absolute bottom-3 left-3 right-3 bg-slate-950/85 backdrop-blur-md text-white rounded-2xl p-3.5 border border-white/15 z-20">
-                            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                              <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider">
-                                Analiza przestrzenna markerów (3D)
-                              </span>
-                              <a href="markery.html" target="_blank" className="text-xs underline text-emerald-200">
-                                Otwórz markery w nowej karcie ↗
-                              </a>
-                            </div>
-                            {detectedMarkers.length === 0 ? (
-                              <p className="text-xs text-slate-300">
-                                Pokaż przed kamerą 1, 2 lub 3 markery z podstrony <strong>Markery WebAR</strong> i ułóż je obok siebie.
-                              </p>
-                            ) : (
-                              <div className="space-y-1.5">
-                                <div className="flex flex-wrap gap-1.5">
-                                  {detectedMarkers.map((m) => (
-                                    <span key={m.id} className="px-2.5 py-1 rounded-lg bg-emerald-600/80 text-xs font-bold">
-                                      {m.icon} {m.name}
-                                    </span>
-                                  ))}
-                                </div>
-                                {adjacentPairs.length > 0 && (
-                                  <div className="text-xs text-amber-300 font-bold">
-                                    🔗 Sąsiedztwo wykryte:{' '}
-                                    {adjacentPairs.map((p, idx) => (
-                                      <span key={idx} className="mr-2">
-                                        [{p.a.icon} + {p.b.icon} • odl. {p.dist}j]
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </section>
-                    )}
-
-                    {/* 3-SLOT ECOSYSTEM SANDBOX (Works both standalone & synced with WebAR) */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                      {/* Left: Available Ecosystem Elements */}
-                      <div className="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border-2 border-emerald-200 shadow-sm">
-                        <h2 className="text-xl font-black text-slate-900 mb-1">
-                          Elementy wycinka łąki / lasu
-                        </h2>
-                        <p className="text-xs text-slate-500 mb-4">
-                          Przeciągnij do 3 slotów po prawej stronie lub kliknij element, aby umieścić go na swojej działce przyrodniczej.
-                        </p>
-
-                        <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
-                          {ECOSYSTEM_ELEMENTS.map((el) => {
-                            const isSelected = slots.includes(el.id);
-
-                            return (
-                              <div
-                                key={el.id}
-                                draggable
-                                onDragStart={(e) => e.dataTransfer.setData('text/plain', el.id)}
-                                onClick={() => handleQuickAdd(el.id)}
-                                className={`p-2.5 sm:p-3.5 rounded-2xl border-2 transition cursor-pointer select-none flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 ${
-                                  isSelected
-                                    ? 'bg-emerald-600 text-white border-emerald-700 shadow-md'
-                                    : 'bg-emerald-50/40 hover:bg-emerald-50 border-emerald-200 hover:border-emerald-400'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                                  <span className="text-2xl sm:text-3xl shrink-0">{el.icon}</span>
-                                  <div className="min-w-0">
-                                    <p className="text-[11px] sm:text-sm font-black leading-tight">
-                                      {el.name}
-                                    </p>
-                                    <p className={`text-[10px] sm:text-[11px] font-semibold ${isSelected ? 'text-emerald-100' : 'text-slate-500'}`}>
-                                      Marker AR #{el.markerId}
-                                    </p>
-                                  </div>
-                                </div>
-                                <span className={`self-start sm:self-auto text-[10px] sm:text-xs font-extrabold px-2 py-1 rounded-full ${
-                                  isSelected ? 'bg-white text-emerald-800' : 'bg-white text-slate-600 border border-slate-200'
-                                }`}>
-                                  {isSelected ? 'W slocie' : '+ Dodaj'}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Right: Meadow Patch with 3 Slots & Results */}
-                      <div className="lg:col-span-7 flex flex-col gap-6">
-                        <div className="bg-gradient-to-b from-lime-100 via-emerald-100 to-emerald-200 rounded-3xl p-6 border-2 border-emerald-300 shadow-sm">
-                          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                            <div>
-                              <span className="px-3 py-1 rounded-full bg-white/80 text-emerald-900 text-xs font-extrabold">
-                                🌳 Wycinek łąki i skraju lasu (3 sloty)
-                              </span>
-                              <h2 className="text-xl font-black text-slate-900 mt-1.5">
-                                Ułóż 3 elementy obok siebie
-                              </h2>
-                            </div>
-                            <button
-                              onClick={handleResetSlots}
-                              className="px-3 py-1.5 rounded-xl bg-white/80 hover:bg-white text-slate-700 font-bold text-xs transition"
-                            >
-                              Wyczyść sloty
-                            </button>
-                          </div>
-
-                          {/* 3 Slots */}
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-5">
-                            {slots.map((slotElementId, idx) => {
-                              const el = ECOSYSTEM_ELEMENTS.find(item => item.id === slotElementId);
-
-                              return (
-                                <div
-                                  key={idx}
-                                  onDragOver={(e) => e.preventDefault()}
-                                  onDrop={(e) => {
-                                    e.preventDefault();
-                                    const id = e.dataTransfer.getData('text/plain');
-                                    if (id) handlePlaceInSlot(idx, id);
-                                  }}
-                                  onClick={() => el && handlePlaceInSlot(idx, null)}
-                                  className={`min-h-[155px] rounded-2xl p-4 border-3 border-dashed flex flex-col items-center justify-center text-center transition ${
-                                    el
-                                      ? 'bg-white border-emerald-500 shadow-md cursor-pointer hover:bg-rose-50'
-                                      : 'bg-white/60 border-emerald-400 text-emerald-900/70'
-                                  }`}
-                                >
-                                  {el ? (
-                                    <>
-                                      <span className="text-5xl mb-2">{el.icon}</span>
-                                      <p className="text-xs sm:text-sm font-black text-slate-900 leading-tight">
-                                        {el.name}
-                                      </p>
-                                      <span className="mt-2 text-[10px] font-bold text-slate-400">
-                                        Kliknij, aby usunąć
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <span className="text-2xl mb-1 opacity-60">➕</span>
-                                      <p className="text-xs font-extrabold">Slot {idx + 1}</p>
-                                      <p className="text-[11px]">Upuść element tutaj</p>
-                                    </>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          <button
-                            onClick={handleCheckResidents}
-                            disabled={slots.filter(Boolean).length === 0}
-                            className={`w-full py-4 px-6 rounded-2xl font-black text-base shadow-lg transition flex items-center justify-center gap-2 ${
-                              slots.filter(Boolean).length > 0
-                                ? 'bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer'
-                                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                            }`}
-                          >
-                            <span>🔍</span>
-                            <span>Sprawdź, kto tu zamieszka</span>
-                          </button>
-                        </div>
-
-                        {/* Consequence & Residents Report */}
-                        {report && (
-                          <div
-                            className={`rounded-3xl p-6 border-2 shadow-lg transition-all ${
-                              report.isPerfect
-                                ? 'bg-gradient-to-br from-emerald-600 to-teal-700 text-white border-emerald-300'
-                                : 'bg-white text-slate-800 border-emerald-200'
-                            }`}
-                          >
-                            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                              <div>
-                                <span
-                                  className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-1 ${
-                                    report.isPerfect
-                                      ? 'bg-amber-300 text-emerald-950'
-                                      : 'bg-emerald-100 text-emerald-800'
-                                  }`}
-                                >
-                                  {report.isPerfect ? '🏆 PERFEKCYJNY EKOSYSTEM!' : '📊 Wynik analizy przyrodniczej'}
-                                </span>
-                                <h3 className="text-xl sm:text-2xl font-black">
-                                  Równowaga przyrodnicza: {report.totalScore} / 100 pkt
-                                </h3>
-                              </div>
-                            </div>
-
-                            {/* Interactions (Synergies & Conflicts) */}
-                            {report.interactions.length > 0 && (
-                              <div className="space-y-2 mb-4">
-                                {report.interactions.map((inter, i) => (
-                                  <div
-                                    key={i}
-                                    className={`p-3 rounded-2xl text-xs sm:text-sm font-bold ${
-                                      report.isPerfect
-                                        ? 'bg-white/15 text-white'
-                                        : inter.type === 'synergy'
-                                          ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
-                                          : 'bg-rose-50 text-rose-900 border border-rose-200'
-                                    }`}
-                                  >
-                                    {inter.text}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* Per-element inhabitants */}
-                            <div className="space-y-3">
-                              {report.selected.map((el) => (
-                                <div
-                                  key={el.id}
-                                  className={`p-4 rounded-2xl ${
-                                    report.isPerfect
-                                      ? 'bg-white/10 border border-white/20'
-                                      : 'bg-slate-50 border border-slate-200'
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-2 font-black text-sm mb-1">
-                                    <span className="text-xl">{el.icon}</span>
-                                    <span>{el.name}</span>
-                                  </div>
-                                  <p className={`text-xs mb-2 ${report.isPerfect ? 'text-emerald-100' : 'text-slate-600'}`}>
-                                    {el.desc}
-                                  </p>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {el.residents.map((res, rIdx) => (
-                                      <span
-                                        key={rIdx}
-                                        className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
-                                          report.isPerfect
-                                            ? 'bg-emerald-950/40 text-emerald-100'
-                                            : 'bg-white border border-slate-200 text-slate-800'
-                                        }`}
-                                      >
-                                        {res}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {/* ANIMAL ↔ HABITAT MATCHING (works with or without the camera) */}
-                    <section className="mt-8 bg-white rounded-3xl p-4 sm:p-6 border-2 border-emerald-200 shadow-sm">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <h2 className="text-lg sm:text-xl font-black text-slate-900">
-                          Dopasuj zwierzęta do ich terenu
-                        </h2>
-                        <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold shrink-0">
-                          {Object.keys(matches).length} / {HABITAT_ANIMALS.length}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 mb-4">
-                        Kliknij zwierzę, a potem kliknij miejsce, w którym naprawdę mieszka.
-                      </p>
-
-                      {/* Animals to place */}
-                      <div className="flex flex-wrap gap-2 mb-5">
-                        {HABITAT_ANIMALS.map((animal) => {
-                          const done = Boolean(matches[animal.id]);
-                          const isSelected = matchSelected === animal.id;
-                          return (
-                            <button
-                              key={animal.id}
-                              disabled={done}
-                              onClick={() => { setMatchSelected(isSelected ? null : animal.id); setMatchMsg(null); }}
-                              className={`px-2.5 py-1.5 rounded-xl border-2 text-[11px] font-extrabold transition flex items-center gap-1.5 ${
-                                done
-                                  ? 'bg-emerald-50 border-emerald-300 text-emerald-700 opacity-70'
-                                  : isSelected
-                                    ? 'bg-emerald-600 border-emerald-700 text-white shadow-md'
-                                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-emerald-300'
-                              }`}
-                            >
-                              <img
-                                src={animal.photo}
-                                alt=""
-                                loading="lazy"
-                                className="w-6 h-6 rounded-full object-cover border border-white/50 shrink-0"
-                              />
-                              <span>{animal.name}</span>
-                              {done && <span>✅</span>}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {/* Habitats */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                        {HABITAT_TARGETS.map((target) => {
-                          const assigned = HABITAT_ANIMALS.filter((a) => matches[a.id] === target.id);
-                          return (
-                            <div
-                              key={target.id}
-                              onClick={() => handleAssignHabitat(target.id)}
-                              className={`rounded-2xl border-2 border-dashed p-3 text-center transition ${
-                                matchSelected ? 'border-emerald-500 bg-emerald-50/60 cursor-pointer hover:bg-emerald-50' : 'border-slate-300 bg-slate-50'
-                              }`}
-                            >
-                              <span className="text-2xl">{target.icon}</span>
-                              <p className="text-[11px] font-black text-slate-800 mt-1">{target.label}</p>
-                              <div className="flex flex-wrap justify-center gap-1 mt-1.5 min-h-[22px]">
-                                {assigned.map((a) => (
-                                  <img key={a.id} src={a.photo} alt={a.name} title={a.name} loading="lazy" className="w-7 h-7 rounded-full object-cover border border-emerald-300" />
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {matchMsg && (
-                        <div className={`mt-3 p-3 rounded-2xl border text-xs font-bold ${matchMsg.ok ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-amber-50 border-amber-300 text-amber-900'}`}>
-                          {matchMsg.ok ? '✅ ' : '⚠️ '}
-                          {matchMsg.text}
-                        </div>
-                      )}
-
-                      {Object.keys(matches).length === HABITAT_ANIMALS.length && (
-                        <div className="mt-3 p-3 rounded-2xl bg-emerald-600 text-white text-xs font-black text-center">
-                          🏆 Wszystkie zwierzęta trafiły do swoich terenów!
-                        </div>
-                      )}
-                    </section>
-                  </main>
-                </div>
-              );
+                );
             }
 
             const root = ReactDOM.createRoot(document.getElementById('root'));

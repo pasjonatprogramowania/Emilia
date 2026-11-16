@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="data:," />
+        <title>Zadanie 7: Zwierzęta Gospodarcze i Surowce | EkoOdkrywcy 1–3</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <style>
+            body {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                background-color: #fefce8;
+            }
+            h1,
+            h2,
+            h3,
+            .font-display {
+                font-family: 'Nunito', sans-serif;
+            }
+        </style>
+    </head>
+    <body class="text-slate-800 antialiased">
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { useState } = React;
+
+            const FARM_ANIMALS = [
+                {
+                    id: 'krowa',
+                    name: 'Krowa',
+                    icon: '🐄',
+                    male: 'Byk',
+                    female: 'Krowa',
+                    young: 'Cielę',
+                    habitat: 'Obora',
+                    products: ['Mleko', 'Mięso wołowe', 'Skóra'],
+                },
+                {
+                    id: 'swinia',
+                    name: 'Świnia',
+                    icon: '🐖',
+                    male: 'Knur',
+                    female: 'Maciora',
+                    young: 'Prosię',
+                    habitat: 'Chlew',
+                    products: ['Mięso', 'Tłuszcz (smalec)', 'Szczecina na pędzle'],
+                },
+                {
+                    id: 'owca',
+                    name: 'Owca',
+                    icon: '🐑',
+                    male: 'Baran',
+                    female: 'Owca',
+                    young: 'Jagnię',
+                    habitat: 'Owczarnia',
+                    products: ['Wełna', 'Baranina', 'Mleko owcze'],
+                },
+                {
+                    id: 'kura',
+                    name: 'Kura',
+                    icon: '🐔',
+                    male: 'Kogut',
+                    female: 'Kura',
+                    young: 'Pisklę / Kurczę',
+                    habitat: 'Kurnik',
+                    products: ['Jajka', 'Mięso drobiowe', 'Pióra'],
+                },
+            ];
+
+            function App() {
+                const [selectedAnimal, setSelectedAnimal] = useState(FARM_ANIMALS[0]);
+                const [answers, setAnswers] = useState({ male: '', young: '', habitat: '', product: '' });
+                const [feedback, setFeedback] = useState(null);
+                const [completed, setCompleted] = useState({});
+
+                const handleCheck = (e) => {
+                    e.preventDefault();
+                    const a = selectedAnimal;
+                    const okMale = answers.male.toLowerCase().trim() === a.male.toLowerCase();
+                    const okYoung = answers.young.toLowerCase().trim() === a.young.toLowerCase();
+                    const okHabitat = answers.habitat.toLowerCase().trim() === a.habitat.toLowerCase();
+
+                    if (okMale && okYoung && okHabitat) {
+                        setFeedback({ ok: true, text: `Świetnie! Rodzina ${a.name} została poprawnie dopasowana wraz z miejscem życia!` });
+                        const next = { ...completed, [a.id]: true };
+                        setCompleted(next);
+
+                        if (Object.keys(next).length === FARM_ANIMALS.length) {
+                            try {
+                                const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
+                                saved['zadanie-7'] = true;
+                                localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
+                            } catch (e) {}
+                        }
+                    } else {
+                        setFeedback({ ok: false, text: 'Sprawdź nazwy samca, młodego lub miejsca życia w tabeli gospodarskiej.' });
+                    }
+                };
+
+                return (
+                    <div className="min-h-screen flex flex-col">
+                        <header className="bg-white border-b border-amber-200 sticky top-0 z-30">
+                            <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
+                                <a href="index.html" aria-label="Powrót do menu" className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-base shrink-0 transition">
+                                    ←
+                                </a>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] font-extrabold uppercase tracking-wide text-amber-700 leading-none mb-1">Zadanie 7 • Gospodarstwo</p>
+                                    <h1 className="text-sm sm:text-lg font-black text-slate-900 truncate leading-tight">Zwierzęta gospodarcze i surowce</h1>
+                                </div>
+                                <span className="px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-extrabold shrink-0">
+                                    {Object.keys(completed).length} / {FARM_ANIMALS.length}
+                                </span>
+                            </div>
+                        </header>
+
+                        <main className="flex-1 max-w-4xl w-full mx-auto px-3 py-4 sm:px-4 sm:py-8">
+                            <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+                                {FARM_ANIMALS.map((fa) => (
+                                    <button
+                                        key={fa.id}
+                                        onClick={() => {
+                                            setSelectedAnimal(fa);
+                                            setAnswers({ male: '', young: '', habitat: '', product: '' });
+                                            setFeedback(null);
+                                        }}
+                                        className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold transition flex items-center gap-2 border-2 shrink-0 ${selectedAnimal.id === fa.id ? 'bg-amber-600 text-white border-amber-600 shadow' : 'bg-white text-slate-700 border-amber-200 hover:border-amber-400'}`}
+                                    >
+                                        <span className="text-xl">{fa.icon}</span>
+                                        <span>{fa.name}</span>
+                                        {completed[fa.id] && <span>✅</span>}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                                <div className="lg:col-span-5 bg-white rounded-3xl p-6 border-2 border-amber-200 shadow-sm text-center">
+                                    <span className="text-7xl mb-3 block">{selectedAnimal.icon}</span>
+                                    <h2 className="text-2xl font-black text-slate-900 mb-2">{selectedAnimal.name}</h2>
+                                    <p className="text-xs text-slate-600 mb-4">Pozyskiwane surowce i produkty:</p>
+                                    <div className="flex flex-wrap justify-center gap-1.5 mb-4">
+                                        {selectedAnimal.products.map((p, idx) => (
+                                            <span key={idx} className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold">
+                                                📦 {p}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-7 bg-white rounded-3xl p-6 border-2 border-amber-200 shadow-sm">
+                                    <h3 className="text-lg font-black text-slate-900 mb-4">Uzupełnij dane gospodarskie</h3>
+                                    <form onSubmit={handleCheck} className="space-y-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-700 mb-1">Samiec (np. Byk / Kogut):</label>
+                                            <input type="text" value={answers.male} onChange={(e) => setAnswers({ ...answers, male: e.target.value })} placeholder="Wpisz nazwę samca..." required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500" />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-700 mb-1">Młode (np. Cielę / Prosię):</label>
+                                            <input type="text" value={answers.young} onChange={(e) => setAnswers({ ...answers, young: e.target.value })} placeholder="Wpisz nazwę młodego..." required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500" />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-700 mb-1">Miejsce życia (np. Obora / Kurnik):</label>
+                                            <input type="text" value={answers.habitat} onChange={(e) => setAnswers({ ...answers, habitat: e.target.value })} placeholder="Wpisz miejsce życia..." required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500" />
+                                        </div>
+
+                                        {feedback && (
+                                            <div className={`p-3.5 rounded-xl border text-xs font-bold ${feedback.ok ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-rose-50 border-rose-300 text-rose-900'}`}>
+                                                {feedback.ok ? '✅ ' : '⚠️ '}
+                                                {feedback.text}
+                                            </div>
+                                        )}
+
+                                        <button type="submit" className="w-full py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-sm transition shadow">
+                                            Sprawdź odpowiedź ✓
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        </script>
+    </body>
+</html>

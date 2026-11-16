@@ -4,23 +4,20 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="data:," />
-        <title>EkoOdkrywcy 1–3 | Interaktywna Platforma Przyrodnicza & WebAR</title>
+        <title>EkoOdkrywcy 1–3 | Interaktywna Pracownia Przyrodnicza</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
         <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
         <style>
             body {
                 font-family: 'Plus Jakarta Sans', sans-serif;
                 background-color: #f4f7f4;
             }
-            h1,
-            h2,
-            h3,
-            .font-display {
+            h1, h2, h3, .font-display {
                 font-family: 'Nunito', sans-serif;
             }
         </style>
@@ -37,7 +34,7 @@
                     badge: 'Zadanie 1 • Karta #5',
                     title: '„Czego brakuje w plecaku?”',
                     subtitle: 'Interaktywna walizka opiekuna',
-                    description: 'Wylosuj zwierzę domowe lub gospodarskie i spakuj tylko bezpieczne oraz potrzebne rzeczy. Sprawdź, dlaczego czekolada lub krowie mleko mogą zaszkodzić!',
+                    description: 'Wylosuj zwierzę domowe lub gospodarskie i spakuj tylko bezpieczne oraz potrzebne rzeczy. Sprawdź, dlaczego czekolada lub mleko szkodzą!',
                     goal: 'Odpowiedzialność za zwierzęta i zdrowe nawyki żywieniowe',
                     href: 'zadanie-1.html',
                     accent: 'amber',
@@ -48,9 +45,9 @@
                     id: 'zadanie-2',
                     badge: 'Zadanie 2 • Karta #6',
                     title: '„Budujemy Leśny Korytarz Życia”',
-                    subtitle: 'Gra logiczna / Układanka przestrzenna',
-                    description: 'Nowa autostrada odcięła zwierzętom drogę do rzeki. Zbuduj zielone mosty (ekodukty), tunele dla płazów, liny dla wiewiórek oraz ekrany akustyczne.',
-                    goal: 'Wpływ działalności człowieka na przyrodę i ochrona siedlisk',
+                    subtitle: 'Układanka przestrzenna / Korytarz',
+                    description: 'Zbuduj zielone mosty (ekodukty), tunele dla płazów, liny dla wiewiórek oraz ekrany akustyczne nad ruchliwą trasą.',
+                    goal: 'Ochrona siedlisk i migracja dzikich zwierząt',
                     href: 'zadanie-2.html',
                     accent: 'sky',
                     icon: '🦌',
@@ -58,24 +55,22 @@
                 },
                 {
                     id: 'zadanie-3',
-                    badge: 'Zadanie 3 • Karta #3 • WebAR',
+                    badge: 'Zadanie 3 • Karta #3',
                     title: '„Zbuduj Idealny Ekosystem”',
-                    subtitle: 'Rozszerzona Rzeczywistość (AR.js) & Sandbox',
-                    description: 'Ułóż markery AR obok siebie lub przetestuj 3 sloty w symulatorze. Przekonaj się, jak spróchniałe drzewo i kałuża z błotem przyciągają życie!',
-                    goal: 'Myślenie przyczynowo-skutkowe i obalanie mitu „sterylnego trawnika”',
+                    subtitle: 'Sandbox Przyrodniczy (3 sloty)',
+                    description: 'Ułóż elementy ekosystemu (stare drzewo, kałuża z błotem, budka lęgowa, łąka, trawnik, lampa) i natychmiast badaj zależności, synergie oraz konflikty.',
+                    goal: 'Myślenie przyczynowo-skutkowe i bioróżnorodność',
                     href: 'zadanie-3.html',
-                    secondaryHref: 'markery.html',
-                    secondaryLabel: 'Karta Markerów AR',
                     accent: 'emerald',
                     icon: '🌿',
-                    tag: 'WebAR + 3D',
+                    tag: 'Sandbox 3D',
                 },
                 {
                     id: 'zadanie-4',
                     badge: 'Zadanie 4 • Karta #8',
                     title: '„Zwierzęce Kształty i Cienie”',
                     subtitle: 'Interaktywny detektor / Magiczna lupka',
-                    description: 'Przesuwaj magiczną latarkę po nocnym, czarno-białym lesie. Odkryj ukryte w zaroślach, na drzewach i pod ziemią zwierzęta po ich fragmentach.',
+                    description: 'Przesuwaj magiczną latarkę po nocnym lesie. Odkryj ukryte w zaroślach, na drzewach i pod ziemią zwierzęta.',
                     goal: 'Percepcja wzrokowa oraz warstwowa budowa lasu',
                     href: 'zadanie-4.html',
                     accent: 'indigo',
@@ -88,15 +83,39 @@
                     title: '„Co je ten zwierzak?”',
                     subtitle: 'Koło fortuny ze smakołykami',
                     description: 'Zakręć cyfrowym kołem fortuny, wylosuj leśnego mieszkańca i skompletuj dla niego zdrowe menu ze stołu pełnego leśnych skarbów.',
-                    goal: 'Świadome dokarmianie zwierząt zimą i naturalna dieta gatunków',
+                    goal: 'Świadome dokarmianie i naturalna dieta gatunków',
                     href: 'zadanie-5.html',
                     accent: 'rose',
                     icon: '🎡',
                     tag: 'Koło Fortuny',
                 },
                 {
+                    id: 'zadanie-6',
+                    badge: 'Zadanie 6 • Karta Podstawy',
+                    title: '„Klucz Dychotomiczny Kręgowców”',
+                    subtitle: 'Przewodnik po gromadach',
+                    description: 'Poprowadź zwierzęta (wilk, bocian, jaszczurka, żaba, okoń) oraz gatunki mylące przez pytania TAK/NIE aż do poprawnej gromady (Ssaki, Ptaki, Gady, Płazy, Ryby).',
+                    goal: 'Rozpoznawanie cech budowy i klasyfikacja kręgowców',
+                    href: 'zadanie-6.html',
+                    accent: 'teal',
+                    icon: '🔍',
+                    tag: 'Klucz TAK/NIE',
+                },
+                {
+                    id: 'zadanie-7',
+                    badge: 'Zadanie 7 • Gospodarstwo',
+                    title: '„Zwierzęta Gospodarcze i Surowce”',
+                    subtitle: 'Moduł rolniczo-gospodarski',
+                    description: 'Dopasuj dla krów, świń, owiec i kur odpowiedniego samca, młode, miejsce życia oraz pozyskiwane surowce i produkty.',
+                    goal: 'Zwierzęta gospodarskie i surowce pochodzenia zwierzęcego',
+                    href: 'zadanie-7.html',
+                    accent: 'amber',
+                    icon: '🐄',
+                    tag: 'Dopasowywanie',
+                },
+                {
                     id: 'memory',
-                    badge: 'Zadanie 6 • Karta #11',
+                    badge: 'Zadanie 8 • Karta #11',
                     title: '„Memory: Egzotyczne Zwierzęta”',
                     subtitle: 'Dopasuj zdjęcie do nazwy gatunku',
                     description: 'Odkrywaj karty i połącz zdjęcie zwierzęcia z jego nazwą. Sześć par egzotycznych gatunków z całego świata do zapamiętania.',
@@ -147,7 +166,6 @@
                 },
             };
 
-            // Progress can be corrupted or contain extra keys (quiz, memory) — read defensively
             const readProgress = () => {
                 try {
                     const parsed = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
@@ -163,7 +181,6 @@
                 useEffect(() => {
                     const syncProgress = () => setCompleted(readProgress());
                     syncProgress();
-                    // Back/forward cache restores the page without re-running effects
                     window.addEventListener('pageshow', syncProgress);
                     window.addEventListener('storage', syncProgress);
                     return () => {
@@ -172,12 +189,11 @@
                     };
                 }, []);
 
-                // Count only real tasks, so extra keys (quiz) cannot push the counter above the total
                 const completedCount = TASKS.filter((task) => Boolean(completed[task.id])).length;
+                const allCompleted = completedCount === TASKS.length;
 
                 return (
                     <div className="min-h-screen flex flex-col">
-                        {/* Header */}
                         <header className="bg-white/90 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-30">
                             <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
                                 <div className="flex items-center gap-2.5 min-w-0">
@@ -186,18 +202,22 @@
                                         <h1 className="text-base sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-none truncate">
                                             EkoOdkrywcy <span className="text-emerald-600">1–3</span>
                                         </h1>
-                                        <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium mt-1">Interaktywna pracownia przyrodnicza & WebAR</p>
+                                        <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium mt-1">Interaktywna pracownia przyrodnicza</p>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-                                    <a href="quiz.html" aria-label="Quiz podsumowujący" className="inline-flex items-center justify-center gap-2 w-10 h-10 sm:w-auto sm:h-auto sm:px-4 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition shadow-sm">
-                                        <span>🧠</span>
-                                        <span className="hidden sm:inline">Quiz podsumowujący</span>
-                                    </a>
-                                    <a href="markery.html" aria-label="Markery WebAR" className="inline-flex items-center justify-center gap-2 w-10 h-10 sm:w-auto sm:h-auto sm:px-4 sm:py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-sm font-bold transition">
-                                        <span>🖨️</span>
-                                        <span className="hidden sm:inline">Markery WebAR</span>
+                                    <a
+                                        href="quiz.html"
+                                        aria-label="Quiz podsumowujący"
+                                        className={`inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-bold transition shadow-sm ${
+                                            allCompleted
+                                                ? 'bg-emerald-600 hover:bg-emerald-700 text-white animate-bounce'
+                                                : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                                        }`}
+                                    >
+                                        <span>{allCompleted ? '🧠' : '🔒'}</span>
+                                        <span className="hidden sm:inline">Quiz Podsumowujący</span>
                                     </a>
                                     <div className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs sm:text-sm font-semibold">
                                         <span>⭐</span>
@@ -209,32 +229,26 @@
                             </div>
                         </header>
 
-                        {/* Hero Banner */}
                         <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-10">
                             <section className="bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-800 rounded-3xl p-6 sm:p-10 text-white shadow-xl shadow-emerald-900/10 mb-10 relative overflow-hidden">
                                 <div className="absolute -right-10 -bottom-10 text-[150px] opacity-10 select-none pointer-events-none">🌲</div>
                                 <div className="max-w-2xl relative z-10">
                                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur text-emerald-100 text-xs font-bold uppercase tracking-wider mb-4">✨ Edukacja Wczesnoszkolna (Klasy 1–3)</span>
-                                    <h2 className="text-2xl sm:text-4xl font-black leading-tight mb-3">Poznaj tajemnice przyrody przez zabawę, eksperymenty i rozszerzoną rzeczywistość!</h2>
-                                    <p className="text-emerald-100/95 text-sm sm:text-base leading-relaxed mb-6">Wybierz jedno z sześciu interaktywnych wyzwań przyrodniczych. Każde zadanie działa bezpośrednio w przeglądarce — na telefonie, tablecie oraz komputerze.</p>
-                                    <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-                                        <a href="zadanie-3.html" className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl bg-white text-emerald-900 hover:bg-emerald-50 font-extrabold text-sm shadow-lg transition transform hover:-translate-y-0.5">
-                                            <span>📷</span>
-                                            <span>Zadanie 3: WebAR Ekosystem</span>
-                                        </a>
-                                        <a href="markery.html" className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-950/40 hover:bg-emerald-950/60 text-white border border-white/25 font-bold text-sm transition">
-                                            <span>🧩</span>
-                                            <span>Markery AR do druku</span>
+                                    <h2 className="text-2xl sm:text-4xl font-black leading-tight mb-3">Poznaj tajemnice przyrody przez interaktywne misje i eksperymenty!</h2>
+                                    <p className="text-emerald-100/95 text-sm sm:text-base leading-relaxed mb-6">Ukończ wszystkie 8 zadań i misji, aby odblokować wielki Quiz Podsumowujący wiedzę przyrodniczą.</p>
+                                    <div className="flex items-center gap-3">
+                                        <a href="zadanie-3.html" className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-emerald-900 hover:bg-emerald-50 font-extrabold text-sm shadow-lg transition">
+                                            <span>🌿</span>
+                                            <span>Zadanie 3: Sandbox Ekosystemu</span>
                                         </a>
                                     </div>
                                 </div>
                             </section>
 
-                            {/* Task Cards Grid */}
                             <section aria-label="Lista zadań edukacyjnych">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">Wybierz zadanie do wykonania</h3>
-                                    <span className="text-xs sm:text-sm text-slate-500 font-medium">6 interaktywnych modułów</span>
+                                    <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">Misje do wykonania</h3>
+                                    <span className="text-xs sm:text-sm text-slate-500 font-medium">8 modułów edukacyjnych</span>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -266,54 +280,30 @@
                                                     </div>
                                                 </div>
 
-                                                <div className="flex flex-col gap-2">
-                                                    <a href={task.href} className={`w-full py-3 px-4 rounded-xl font-extrabold text-sm text-center shadow-md transition flex items-center justify-center gap-2 ${style.btn}`}>
-                                                        <span>Uruchom zadanie</span>
-                                                        <span>→</span>
-                                                    </a>
-                                                    {task.secondaryHref && (
-                                                        <a href={task.secondaryHref} className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-center bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition">
-                                                            🖨️ {task.secondaryLabel}
-                                                        </a>
-                                                    )}
-                                                </div>
+                                                <a href={task.href} className={`w-full py-3 px-4 rounded-xl font-extrabold text-sm text-center shadow-md transition flex items-center justify-center gap-2 ${style.btn}`}>
+                                                    <span>Uruchom zadanie</span>
+                                                    <span>→</span>
+                                                </a>
                                             </article>
                                         );
                                     })}
-
                                 </div>
                             </section>
                         </main>
 
-                        {/* Footer */}
                         <footer className="bg-white border-t border-slate-200 py-6 mt-12">
                             <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-                                <p className="font-semibold">EkoOdkrywcy 1–3 • Multi-page React 18 + Tailwind CSS + WebAR (AR.js)</p>
-                                <div className="flex flex-wrap gap-4 font-bold text-slate-600">
-                                    <a href="zadanie-1.html" className="hover:text-emerald-700">
-                                        Zad. 1
-                                    </a>
-                                    <a href="zadanie-2.html" className="hover:text-emerald-700">
-                                        Zad. 2
-                                    </a>
-                                    <a href="zadanie-3.html" className="hover:text-emerald-700">
-                                        Zad. 3 (WebAR)
-                                    </a>
-                                    <a href="zadanie-4.html" className="hover:text-emerald-700">
-                                        Zad. 4
-                                    </a>
-                                    <a href="zadanie-5.html" className="hover:text-emerald-700">
-                                        Zad. 5
-                                    </a>
-                                    <a href="markery.html" className="hover:text-emerald-700">
-                                        Markery
-                                    </a>
-                                    <a href="quiz.html" className="hover:text-emerald-700">
-                                        Quiz
-                                    </a>
-                                    <a href="memory.html" className="hover:text-emerald-700">
-                                        Memory
-                                    </a>
+                                <p className="font-semibold">EkoOdkrywcy 1–3 • Platforma Przyrodnicza</p>
+                                <div className="flex flex-wrap gap-3 font-bold text-slate-600">
+                                    <a href="zadanie-1.html" className="hover:text-emerald-700">Zad. 1</a>
+                                    <a href="zadanie-2.html" className="hover:text-emerald-700">Zad. 2</a>
+                                    <a href="zadanie-3.html" className="hover:text-emerald-700">Zad. 3</a>
+                                    <a href="zadanie-4.html" className="hover:text-emerald-700">Zad. 4</a>
+                                    <a href="zadanie-5.html" className="hover:text-emerald-700">Zad. 5</a>
+                                    <a href="zadanie-6.html" className="hover:text-emerald-700">Zad. 6</a>
+                                    <a href="zadanie-7.html" className="hover:text-emerald-700">Zad. 7</a>
+                                    <a href="memory.html" className="hover:text-emerald-700">Memory</a>
+                                    <a href="quiz.html" className="hover:text-emerald-700">Quiz</a>
                                 </div>
                             </div>
                         </footer>
