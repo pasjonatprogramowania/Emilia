@@ -92,7 +92,7 @@
                 const [moves, setMoves] = useState(0);
                 const [locked, setLocked] = useState(false);
 
-                const isWon = matched.length === ANIMALS.length * 2;
+                const isWon = matched.length === ANIMALS.length;
 
                 const handleOpen = (index) => {
                     if (locked || matched.includes(deck[index].animalId)) return;
@@ -109,9 +109,10 @@
                             const nextMatched = [...matched, a.animalId];
                             setMatched(nextMatched);
                             setOpened([]);
-                            if (nextMatched.length === ANIMALS.length * 2) {
+                            if (nextMatched.length === ANIMALS.length) {
                                 try {
-                                    const saved = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
+                                    const parsed = JSON.parse(localStorage.getItem('eko_odkrywcy_progress') || '{}');
+                                    const saved = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
                                     saved['memory'] = true;
                                     localStorage.setItem('eko_odkrywcy_progress', JSON.stringify(saved));
                                 } catch (err) {}
