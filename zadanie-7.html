@@ -68,7 +68,7 @@
                     icon: '🐔',
                     male: 'Kogut',
                     female: 'Kura',
-                    young: 'Pisklę / Kurczę',
+                    young: 'Pisklę',
                     habitat: 'Kurnik',
                     products: ['Jajka', 'Mięso drobiowe', 'Pióra'],
                 },
@@ -101,12 +101,23 @@
                     }));
                 };
 
+                // Accept variants ("Pisklę" / "Piskle") and slash-separated alternatives, ignoring diacritics
+                const foldAnswer = (text) => text.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const matchesAnswer = (value, target) => {
+                    const typed = foldAnswer(value);
+                    return target
+                        .toLowerCase()
+                        .split('/')
+                        .map((part) => foldAnswer(part))
+                        .some((part) => part === typed);
+                };
+
                 const handleCheck = (e) => {
                     e.preventDefault();
                     const a = selectedAnimal;
-                    const okMale = answers.male.toLowerCase().trim() === a.male.toLowerCase();
-                    const okYoung = answers.young.toLowerCase().trim() === a.young.toLowerCase();
-                    const okHabitat = answers.habitat.toLowerCase().trim() === a.habitat.toLowerCase();
+                    const okMale = matchesAnswer(answers.male, a.male);
+                    const okYoung = matchesAnswer(answers.young, a.young);
+                    const okHabitat = matchesAnswer(answers.habitat, a.habitat);
                     const okProducts =
                         answers.products.length === a.products.length &&
                         a.products.every((p) => answers.products.includes(p));
