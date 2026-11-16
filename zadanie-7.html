@@ -90,6 +90,7 @@
                 const [answers, setAnswers] = useState({ male: '', young: '', habitat: '', products: [] });
                 const [feedback, setFeedback] = useState(null);
                 const [completed, setCompleted] = useState({});
+                const [easyMode, setEasyMode] = useState(false);
 
                 const toggleProduct = (product) => {
                     setAnswers((prev) => ({
@@ -173,36 +174,58 @@
                                 </div>
 
                                 <div className="lg:col-span-7 bg-white rounded-3xl p-6 border-2 border-amber-200 shadow-sm">
-                                    <h3 className="text-lg font-black text-slate-900 mb-4">Uzupełnij dane gospodarskie</h3>
+                                    <div className="flex items-start justify-between gap-3 mb-4">
+                                        <h3 className="text-lg font-black text-slate-900">Uzupełnij dane gospodarskie</h3>
+                                        <label className="inline-flex items-center gap-2 cursor-pointer select-none shrink-0">
+                                            <span className="text-[11px] font-bold text-slate-600 leading-tight text-right">Wersja dla<br />małych dzieci</span>
+                                            <input type="checkbox" checked={easyMode} onChange={(e) => setEasyMode(e.target.checked)} className="sr-only peer" aria-label="Wersja dla małych dzieci — wybór z listy zamiast wpisywania" />
+                                            <span className="relative w-11 h-6 rounded-full bg-slate-300 peer-checked:bg-amber-500 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-5 after:h-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
+                                        </label>
+                                    </div>
+                                    <p className="text-[11px] text-slate-500 -mt-2 mb-4">
+                                        {easyMode ? 'Wybierz odpowiedzi z list — nic nie trzeba wpisywać.' : 'Wpisz odpowiedzi samodzielnie lub włącz „Wersję dla małych dzieci”, aby wybierać z list.'}
+                                    </p>
                                     <form onSubmit={handleCheck} className="space-y-4">
                                         <div>
                                             <label className="block text-xs font-bold text-slate-700 mb-1">Samiec:</label>
-                                            <select value={answers.male} onChange={(e) => setAnswers({ ...answers, male: e.target.value })} required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500">
-                                                <option value="">-- Wybierz samca --</option>
-                                                {MALE_OPTIONS.map((opt) => (
-                                                    <option key={opt} value={opt}>{opt}</option>
-                                                ))}
-                                            </select>
+                                            {easyMode ? (
+                                                <select value={answers.male} onChange={(e) => setAnswers({ ...answers, male: e.target.value })} required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500">
+                                                    <option value="">-- Wybierz samca --</option>
+                                                    {MALE_OPTIONS.map((opt) => (
+                                                        <option key={opt} value={opt}>{opt}</option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <input type="text" value={answers.male} onChange={(e) => setAnswers({ ...answers, male: e.target.value })} placeholder="Wpisz nazwę samca..." required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500" />
+                                            )}
                                         </div>
 
                                         <div>
                                             <label className="block text-xs font-bold text-slate-700 mb-1">Młode:</label>
-                                            <select value={answers.young} onChange={(e) => setAnswers({ ...answers, young: e.target.value })} required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500">
-                                                <option value="">-- Wybierz młode --</option>
-                                                {YOUNG_OPTIONS.map((opt) => (
-                                                    <option key={opt} value={opt}>{opt}</option>
-                                                ))}
-                                            </select>
+                                            {easyMode ? (
+                                                <select value={answers.young} onChange={(e) => setAnswers({ ...answers, young: e.target.value })} required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500">
+                                                    <option value="">-- Wybierz młode --</option>
+                                                    {YOUNG_OPTIONS.map((opt) => (
+                                                        <option key={opt} value={opt}>{opt}</option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <input type="text" value={answers.young} onChange={(e) => setAnswers({ ...answers, young: e.target.value })} placeholder="Wpisz nazwę młodego..." required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500" />
+                                            )}
                                         </div>
 
                                         <div>
                                             <label className="block text-xs font-bold text-slate-700 mb-1">Miejsce życia:</label>
-                                            <select value={answers.habitat} onChange={(e) => setAnswers({ ...answers, habitat: e.target.value })} required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500">
-                                                <option value="">-- Wybierz miejsce --</option>
-                                                {HABITAT_OPTIONS.map((opt) => (
-                                                    <option key={opt} value={opt}>{opt}</option>
-                                                ))}
-                                            </select>
+                                            {easyMode ? (
+                                                <select value={answers.habitat} onChange={(e) => setAnswers({ ...answers, habitat: e.target.value })} required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500">
+                                                    <option value="">-- Wybierz miejsce --</option>
+                                                    {HABITAT_OPTIONS.map((opt) => (
+                                                        <option key={opt} value={opt}>{opt}</option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <input type="text" value={answers.habitat} onChange={(e) => setAnswers({ ...answers, habitat: e.target.value })} placeholder="Wpisz miejsce życia..." required className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-amber-500" />
+                                            )}
                                         </div>
 
                                         <div>
